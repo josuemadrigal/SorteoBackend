@@ -1,7 +1,6 @@
 const { model } = require('mongoose');
 const {router} = require('../routes/registros');
 const {response} = require('express');
-
 const Registro = require('../models/Registro');
 
  
@@ -21,7 +20,7 @@ const crearRegistro = async(req, res = response) => {
 
     try {
 
-        let registro = await Registro.findOne({ cedula ,boleta })
+        let registro = await Registro.findOne({ cedula ,boleta, status })
 
         if (registro) {
 
@@ -37,7 +36,7 @@ const crearRegistro = async(req, res = response) => {
 
         await registro.save();
     
-        res.status(201).json({
+       return res.status(201).json({
             ok: true,
             cedula: registro.cedula,
             boleta: registro.boleta,
@@ -49,7 +48,7 @@ const crearRegistro = async(req, res = response) => {
        // console.log(error);
         //console.log(res.status);
 
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
         })
