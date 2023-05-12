@@ -37,7 +37,7 @@ const RegistroSchema = Schema({
     responsable: {
         type: String,
         requiered: false,
-        unique: true
+        
     },
     codigo: {
         type: Number,
