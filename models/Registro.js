@@ -19,7 +19,7 @@ const RegistroSchema = Schema({
     telefono: {
         type: Number,
         required: true,
-        unique: true
+        
     },
     municipio: {
         type: String,
