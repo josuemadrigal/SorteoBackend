@@ -22,5 +22,9 @@
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
     "mongoose": "^7.1.0"
-  }
+  }, 
+  
+  "engines": {
+    "node": "14.15.0"
+}
 }
