@@ -41,7 +41,7 @@ const RegistroSchema = Schema({
     },
     codigo: {
         type: Number,
-        requiered: true
+        requiered: false
     },
     status: {
         type: Number,
