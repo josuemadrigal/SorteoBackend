@@ -5,7 +5,8 @@ const Registro = require('../models/Registro');
 
  
 const getRegistros = async (req, res = response) => {
-    console.log({"params":req.query})
+    //console.log({"params":req.query})
+    
     const registros = await Registro.find({status: req.query.status, municipio: req.query.municipio}).limit(req.query.cantidad);
 
     res.json({
@@ -16,19 +17,32 @@ const getRegistros = async (req, res = response) => {
 
 const crearRegistro = async(req, res = response) => {
 
-    const {cedula, boleta} = req.body;
+    const {cedula, boleta, codigo, status} = req.body;
 
     try {
 
-        let registro = await Registro.findOne({ cedula ,boleta, status })
+        let registro = await Registro.findOne({ cedula, boleta, status, codigo})
 
-        if (registro) {
+        console.log(Registro)
 
-            console.log(registro)
+        if(response.status !== 400) throw "Error de peticione";
+        
+
+
+        if (codigo == registro.codigo) {
 
             return res.status(400).json({
                 ok:false,
                 msg: 'existe registro con esa cedula o telefono'
+            });
+        }
+
+        if (registro) {
+
+
+            return res.status(403).json({
+                ok: false,
+                msg: 'Codigo dirigente no valido'
             });
         }
        
@@ -45,13 +59,12 @@ const crearRegistro = async(req, res = response) => {
         
     } catch (error) {
 
-       // console.log(error);
-        //console.log(res.status);
-
-        return res.status(500).json({
+         res.status(500).json({
             ok: false,
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
         })
+
+        throw error;
     }
 }
 

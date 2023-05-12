@@ -12,7 +12,9 @@ const validarCampos = (req, res = response, next) => {
             errors: errors.mapped(),
             msg: "Por aqui"
             
+            
         });
+        //console.log('por aqui');
     }
 
     next();
