@@ -30,7 +30,7 @@ const RegistroSchema = Schema({
         required: true
     },
     boleta: {
-        type: String,
+        type: Number,
         requiered: true,
         unique: true
     },
