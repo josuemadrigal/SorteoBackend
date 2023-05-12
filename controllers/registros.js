@@ -21,15 +21,11 @@ const crearRegistro = async(req, res = response) => {
 
     try {
 
-        let registro = await Registro.findOne({ cedula, boleta, status, codigo})
+        let registro = await Registro.findOne({ cedula, boleta, status})
 
-        console.log(Registro)
+    
 
-        if(response.status !== 400) throw "Error de peticione";
-        
-
-
-        if (codigo == registro.codigo) {
+        if (registro) {
 
             return res.status(400).json({
                 ok:false,
@@ -64,7 +60,7 @@ const crearRegistro = async(req, res = response) => {
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
         })
 
-        throw error;
+      
     }
 }
 
