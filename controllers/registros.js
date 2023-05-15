@@ -64,14 +64,14 @@ const actuzalizarRegistros = async (req, res = response) => {
     try {
         const registro = await Registro.find({boleta : boletaId})
         
-        console.log(boletaId)
+        //console.log(boletaId)
         if (!registro) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Registro no existe por ID'
             });      
         }
-        console.log({"Registro":registro})
+        //console.log({"Registro":registro})
         // registro[0].status = status;
         const nuevoRegistro = {
             status: status
@@ -85,7 +85,7 @@ const actuzalizarRegistros = async (req, res = response) => {
         });
 
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         res.status(500).json({
             ok:false,
             msg: 'Hable con Josué: ' + JSON.stringify(error)
