@@ -7,7 +7,7 @@ const RegistroSchema = Schema({
         required: true
     },
     cedula: {
-        type: Number,
+        type: String,//uuu
         required: true,
         unique: true
     },
@@ -30,7 +30,7 @@ const RegistroSchema = Schema({
         required: true
     },
     boleta: {
-        type: Number,
+        type: String,
         requiered: true,
         unique: true
     },
