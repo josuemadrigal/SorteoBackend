@@ -21,20 +21,16 @@ const crearRegistro = async(req, res = response) => {
 
     try {
 
-        let registro = await Registro.findOne({ cedula, email, telefono, boleta })
-
-    
+        let registro = await Registro.findOne({ cedula, boleta })
 
         if (registro) {
-
             return res.status(400).json({
                 ok:false,
                 msg: 'existe registro con esa cedula o telefono'
             });
+            
         }
 
-    
-       
         registro = new Registro(req.body);
 
         await registro.save();
@@ -48,12 +44,10 @@ const crearRegistro = async(req, res = response) => {
         
     } catch (error) {
 
-         res.status(500).json({
+        res.status(500).json({
             ok: false,
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
         })
-
-      
     }
 }
 
