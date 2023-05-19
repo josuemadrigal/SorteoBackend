@@ -23,7 +23,7 @@
     "mongoose": "^7.1.0"
   },
   "engines": {
-    "node": ">=0.7.0 <16.15.0"
+    "node": ">=19.9.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
