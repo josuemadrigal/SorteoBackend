@@ -7,7 +7,22 @@ const Registro = require('../models/Registro');
 const getRegistros = async (req, res = response) => {
     //console.log({"params":req.query})
     
-    const registros = await Registro.find({status: req.query.status, municipio: req.query.municipio}).limit(req.query.cantidad);
+    //const registros = await Registro.find({status: req.query.status, municipio: req.query.municipio}).limit(req.query.cantidad);
+
+    //const registros = await Registro.aggregate([{ $match: {status: 1, municipio: 'la-romana'}}]).limit(2);
+    
+    
+    const registros = await Registro.find(
+        {  status: req.query.status, municipio: req.query.municipio,
+           $expr: { $lt: [0.5, {$rand: {} } ] }
+        },
+        { _id: 0, nombre: 1, boleta: 1, municipio: 1 }
+     ).limit(req.query.cantidad);
+
+     console.log(registros);
+
+    //const registros = await Registro.aggregate([ { $sample: { size: 4 } } ])
+
 
     res.json({
         ok: true,
