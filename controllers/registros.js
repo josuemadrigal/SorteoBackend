@@ -13,10 +13,12 @@ const getRegistros = async (req, res = response) => {
     
     
     const registros = await Registro.find(
-        {  status: req.query.status, municipio: req.query.municipio,
+        {   status: req.query.status,
+            municipio: req.query.municipio,
+
            $expr: { $lt: [0.5, {$rand: {} } ] }
         },
-        { _id: 0, nombre: 1, boleta: 1, municipio: 1 }
+        { _id: 0, nombre: 1, boleta: 1, municipio: 1, cedula: 1, nombre: 1 }
      ).limit(req.query.cantidad);
 
      console.log(registros);
@@ -70,6 +72,7 @@ const actuzalizarRegistros = async (req, res = response) => {
 
     const boletaId = req.params.id;
     const status = req.body.status;
+    const premio = req.body.premio;
     try {
         const registro = await Registro.find({boleta : boletaId})
         
@@ -83,7 +86,8 @@ const actuzalizarRegistros = async (req, res = response) => {
         //console.log({"Registro":registro})
         // registro[0].status = status;
         const nuevoRegistro = {
-            status: status
+            status: status,
+            premio: premio
         }
 
         const registroActualizado = await Registro.findOneAndUpdate({boleta: registro[0].boleta}, nuevoRegistro, { new: true} );
