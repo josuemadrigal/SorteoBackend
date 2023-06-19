@@ -16,12 +16,13 @@ const getRegistros = async (req, res = response) => {
         {   status: req.query.status,
             municipio: req.query.municipio,
 
-           $expr: { $lt: [0.5, {$rand: {} } ] }
+         $expr: { $lt: [0.5, {$rand: {} } ] }
+        
         },
         { _id: 0, nombre: 1, boleta: 1, municipio: 1, cedula: 1, nombre: 1 }
      ).limit(req.query.cantidad);
 
-     console.log(registros);
+     //console.log(registros);
 
     //const registros = await Registro.aggregate([ { $sample: { size: 4 } } ])
 
