@@ -1,22 +1,22 @@
-const mongoose = require('mongoose');
-const dbConnection = async () => {
+// const mongoose = require('mongoose');
+// const { connection } = require('mongoose');
+const mysql = require('mysql2/promise')
 
-    try {
-        await mongoose.connect( process.env.DB_CNN, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            autoIndex: true,
-        });
-
-
-        console.log('DB Online');
-
-    } catch (error){
-        console.log(error);
-        throw new Error('Error al iniciar BD');
+let connection = mysql.createConnection(process.env.DB_CNN);
+connection.catch(function (err) {
+    if (!err) {
+        console.log("Database is connected");
+    } else {
+        console.log("Error while connecting with database");
     }
-}
+});
 
+  async function query(sql) {
+      const cnn = await mysql.createConnection(process.env.DB_CNN);
+      const [results, ] = await cnn.query(sql);
+      return results;
+  }
 module.exports = {
-    dbConnection
+    connection,
+    query
 }

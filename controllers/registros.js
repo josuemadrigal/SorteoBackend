@@ -1,31 +1,28 @@
-const { model } = require('mongoose');
+// const { model } = require('mongoose');
 const {router} = require('../routes/registros');
 const {response} = require('express');
-const Registro = require('../models/Registro');
-
- 
+// const Registro = require('../models/Registro');
+var {
+    connection,
+    query
+} = require("../database/config");
+const {
+    v1: uuidv1,
+    v4: uuidv4,
+} = require('uuid');
 const getRegistros = async (req, res = response) => {
-    //console.log({"params":req.query})
-    
-    //const registros = await Registro.find({status: req.query.status, municipio: req.query.municipio}).limit(req.query.cantidad);
 
-    //const registros = await Registro.aggregate([{ $match: {status: 1, municipio: 'la-romana'}}]).limit(2);
-    
-    
-    const registros = await Registro.find(
-        {   status: req.query.status,
-            municipio: req.query.municipio,
-
-         $expr: { $lt: [0.5, {$rand: {} } ] }
-        
-        },
-        { _id: 0, nombre: 1, boleta: 1, municipio: 1, cedula: 1, nombre: 1 }
-     ).limit(req.query.cantidad);
-
-     //console.log(registros);
-
-    //const registros = await Registro.aggregate([ { $sample: { size: 4 } } ])
-
+    let registros = await query(`
+    SELECT *
+        FROM registro AS r1 JOIN(SELECT CEIL(RAND() *
+            (SELECT MAX(id) FROM registro)) AS id)
+    AS r2
+    WHERE r1.id >= r2.id
+    and r1.status = ${req.query.status} 
+    and r1.municipio = '${req.query.municipio}'
+    ORDER BY r1.id ASC
+    LIMIT ${req.query.cantidad}
+    `);
 
     res.json({
         ok: true,
@@ -35,13 +32,25 @@ const getRegistros = async (req, res = response) => {
 
 const crearRegistro = async(req, res = response) => {
 
-    const {email, cedula, telefono, boleta} = req.body;
+    const {
+        email,
+        cedula,
+        telefono,
+        boleta,
+        nombre,
+        municipio,
+        direccion,
+        status,
+        responsable,
+        premio,
+        codigo
+    } = req.body;
 
     try {
 
-        let registro = await Registro.findOne({ cedula, boleta })
-
-        if (registro) {
+        let registro = await query(`SELECT * from registro where cedula = '${cedula}' and boleta = '${boleta}'`) //await Registro.findOne({ cedula, boleta })
+        let uid = uuidv1();
+        if (registro.length > 0) {
             return res.status(400).json({
                 ok:false,
                 msg: 'existe registro con esa cedula o telefono'
@@ -49,10 +58,23 @@ const crearRegistro = async(req, res = response) => {
             
         }
 
-        registro = new Registro(req.body);
+    let guardar = await query(`INSERT INTO registro (
+	 guid
+	, nombre
+	, cedula
+	, email
+	, telefono
+	, municipio
+	, direccion
+	, boleta
+	, responsable
+	, status
+	, premio
+	, codigo
+	)
+    VALUES
+     ('${uid}','${nombre}',' ${cedula}','${email}','${telefono}','${municipio}','${direccion}','${boleta}','${responsable}',${status},'${premio}','${codigo}')`);
 
-        await registro.save();
-    
        return res.status(201).json({
             ok: true,
             cedula: registro.cedula,
@@ -71,35 +93,47 @@ const crearRegistro = async(req, res = response) => {
 
 const actuzalizarRegistros = async (req, res = response) => {
 
-    const boletaId = req.params.id;
-    const status = req.body.status;
-    const premio = req.body.premio;
+    // const boletaId = req.params.id;
+    // const status = req.body.status;
+    // const premio = req.body.premio;
+    const {
+        email,
+        cedula,
+        telefono,
+        boleta,
+        nombre,
+        municipio,
+        direccion,
+        status,
+        responsable,
+        premio,
+        codigo
+    } = req.body;
     try {
-        const registro = await Registro.find({boleta : boletaId})
-        
-        //console.log(boletaId)
-        if (!registro) {
+        let registro = await query(`SELECT * from registro where boleta = ${req.params.id}`) //await Registro.findOne({ cedula, boleta })
+        if (registro.length <= 0) {
             return res.status(404).json({
                 ok: false,
                 msg: 'Registro no existe por ID'
             });      
         }
-        //console.log({"Registro":registro})
-        // registro[0].status = status;
-        const nuevoRegistro = {
-            status: status,
-            premio: premio
-        }
+        let guardar = await query(`
+        UPDATE registro
+        SET 
+        status = ${status}
+        , premio = '${premio}'
 
-        const registroActualizado = await Registro.findOneAndUpdate({boleta: registro[0].boleta}, nuevoRegistro, { new: true} );
+        WHERE boleta = ${req.params.id}
+        `);
+
+        registro = await query(`SELECT * from registro where boleta = ${req.params.id}`) //await Registro.findOne({ cedula, boleta })
 
         res.json({
             ok: true,
-            registro: registroActualizado
+            registro: registro
         });
 
     } catch (error) {
-        //console.log(error);
         res.status(500).json({
             ok:false,
             msg: 'Hable con Josué: ' + JSON.stringify(error)
@@ -112,5 +146,4 @@ module.exports = {
     getRegistros,
     crearRegistro,
     actuzalizarRegistros
-
 }
