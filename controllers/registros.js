@@ -1,5 +1,5 @@
 // const { model } = require('mongoose');
-const {router} = require('../routes/registros');
+//const router = require('../routes/registros');
 const {response} = require('express');
 // const Registro = require('../models/Registro');
 var {

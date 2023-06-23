@@ -3,6 +3,7 @@
 const mysql = require('mysql2/promise')
 
 let connection = mysql.createConnection(process.env.DB_CNN);
+
 connection.catch(function (err) {
     if (!err) {
         console.log("Database is connected");
