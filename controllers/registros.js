@@ -47,7 +47,7 @@ const crearRegistro = async(req, res = response) => {
     } = req.body;
 
     try {
-
+        console.log(req.body);
         let registro = await query(`SELECT * from registro where cedula = '${cedula}' and boleta = '${boleta}'`) //await Registro.findOne({ cedula, boleta })
         let uid = uuidv1();
         if (registro.length > 0) {
