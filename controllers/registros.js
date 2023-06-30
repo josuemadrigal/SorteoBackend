@@ -93,7 +93,7 @@ const crearRegistro = async(req, res = response) => {
        return res.status(400).json({
             ok: false,
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
-        })
+        }).send();
     }
 }
 
