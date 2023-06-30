@@ -12,16 +12,20 @@ const {
 } = require('uuid');
 const getRegistros = async (req, res = response) => {
     
+    // let registros = await query(`
+    // SELECT *
+    //     FROM registro AS r1 JOIN(SELECT CEIL(RAND() *
+    //         (SELECT MAX(id) FROM registro)) AS id)
+    // AS r2
+    // WHERE r1.id >= r2.id
+    // and r1.status = ${req.query.status} 
+    // and r1.municipio = '${req.query.municipio}'
+    // ORDER BY r1.id ASC
+    // LIMIT ${req.query.cantidad}
+    // `);
+
     let registros = await query(`
-    SELECT *
-        FROM registro AS r1 JOIN(SELECT CEIL(RAND() *
-            (SELECT MAX(id) FROM registro)) AS id)
-    AS r2
-    WHERE r1.id >= r2.id
-    and r1.status = ${req.query.status} 
-    and r1.municipio = '${req.query.municipio}'
-    ORDER BY r1.id ASC
-    LIMIT ${req.query.cantidad}
+    SELECT * FROM registro WHERE status=${req.query.status}  and municipio='${req.query.municipio}' ORDER BY RAND() LIMIT 0,${req.query.cantidad}
     `);
 
     res.json({
@@ -48,13 +52,16 @@ const crearRegistro = async(req, res = response) => {
 
     try {
     
-        let registro = await query(`SELECT * from registro where cedula = '${cedula}' and boleta = '${boleta}'`) //await Registro.findOne({ cedula, boleta })
+        let registro = await query(`SELECT * from registro where cedula='${cedula}' OR boleta='${boleta}'`) //await Registro.findOne({ cedula, boleta })
         let uid = uuidv1();
-        if (registro.length > 0) {
-            return res.status(400).json({
+        console.log("1 " + registro);
+        if (registro) {
+            console.log("2");
+            // return res.status(203).send();
+             return res.status(203).json({
                 ok:false,
                 msg: 'existe registro con esa cedula o telefono'
-            });
+            }).send();
             
         }
 
@@ -84,7 +91,7 @@ const crearRegistro = async(req, res = response) => {
         
     } catch (error) {
 
-        res.status(500).json({
+       return res.status(400).json({
             ok: false,
             msg: 'Habla con el Admin :'+ JSON.stringify(error),
         })
