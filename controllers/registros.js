@@ -11,7 +11,7 @@ const {
     v4: uuidv4,
 } = require('uuid');
 const getRegistros = async (req, res = response) => {
-
+    
     let registros = await query(`
     SELECT *
         FROM registro AS r1 JOIN(SELECT CEIL(RAND() *
