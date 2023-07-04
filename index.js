@@ -19,3 +19,4 @@ app.use('/api/registros', require('./routes/registros'));
 app.listen(process.env.PORT, () => {
     console.log(`Servidor activo puerto: ${process.env.PORT}`);
 })
+

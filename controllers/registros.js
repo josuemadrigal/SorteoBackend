@@ -34,6 +34,16 @@ const getRegistros = async (req, res = response) => {
     })
 }
 
+
+const getResponsables = async (req, res = response) => {
+
+    let responsables = await query(`
+    SELECT * FROM responsables ORDER BY name ASC LIMIT 0,500
+    `);
+
+    res.json(responsables)
+}
+
 const crearRegistro = async(req, res = response) => {
 
     const {
@@ -151,5 +161,6 @@ const actuzalizarRegistros = async (req, res = response) => {
 module.exports = {
     getRegistros,
     crearRegistro,
-    actuzalizarRegistros
+    actuzalizarRegistros,
+    getResponsables
 }

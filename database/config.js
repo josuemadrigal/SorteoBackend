@@ -15,8 +15,11 @@ connection.catch(function (err) {
   async function query(sql) {
       const cnn = await mysql.createConnection(process.env.DB_CNN);
       const [results, ] = await cnn.query(sql);
+      cnn.destroy();
       return results;
+      
   }
+
 module.exports = {
     connection,
     query

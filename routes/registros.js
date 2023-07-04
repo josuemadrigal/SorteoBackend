@@ -2,7 +2,7 @@ const {Router} = require('express');
 const {validarCampos} = require('../middlewares/validar-campos'); 
 const {check} = require('express-validator'); 
 
-const {getRegistros, crearRegistro, actuzalizarRegistros } = require('../controllers/registros');
+const {getRegistros, crearRegistro, actuzalizarRegistros, getResponsables } = require('../controllers/registros');
 
 const router = Router();
 
@@ -23,5 +23,6 @@ router.post(
 );
 //actualizar
 router.put('/:id', actuzalizarRegistros );
+router.get('/all', getResponsables );
 
 module.exports = router;
