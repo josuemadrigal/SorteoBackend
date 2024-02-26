@@ -1,58 +1,24 @@
-const {Schema, model} = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const RegistroSchema = Schema({
+  municipio: {
+    type: String,
+    required: true,
+  },
+  boleta: {
+    type: String,
+    requiered: true,
+    unique: true,
+  },
 
-    nombre: {
-        type: String,
-        required: true
-    },
-    cedula: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    email: {
-        type: String,
-        required: false,
-        unique: true
-    },
-    telefono: {
-        type: Number,
-        required: true,
-        
-    },
-    municipio: {
-        type: String,
-        required: true
-    },
-    direccion: {
-        type: String,
-        required: true
-    },
-    boleta: {
-        type: String,
-        requiered: true,
-        unique: true
-    },
-    responsable: {
-        type: String,
-        requiered: false,
-        
-    },
-    codigo: {
-        type: Number,
-        requiered: false
-    },
-    status: {
-        type: Number,
-        requiered: true
-    },
-    premio: {
-        type: String,
-        requiered: false
-    }
+  status: {
+    type: Number,
+    requiered: true,
+  },
+  premio: {
+    type: String,
+    requiered: false,
+  },
+});
 
-} );
-
-
-module.exports = model('Registro', RegistroSchema);
+module.exports = model("Registro", RegistroSchema);
