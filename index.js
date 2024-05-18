@@ -17,5 +17,5 @@ app.use("/api/registros", require("./routes/registros"));
 dbMySql();
 
 app.listen(process.env.PORT, () => {
-  console.log(`Servidor activo puerto: ${process.env.PORT}`);
+  console.log(`Servidor activo puerto => ${process.env.PORT}`);
 });
