@@ -2,12 +2,13 @@ const { response } = require("express");
 
 var { connection, sequelize, query } = require("../database/database");
 const { v1: uuidv1, v4: uuidv4 } = require("uuid");
-const Regmujer = require("../models/Regmujer");
+const TbMadres = require("../models/Tb_madres");
+const TbPremios = require("../models/Tb_premios"); // Corrected the import
 
 const getRegistros = async (req, res = response) => {
   try {
     const registros = await sequelize.query(`
-      SELECT * FROM regmujers 
+      SELECT * FROM tb_madres 
       WHERE status=${req.query.status} AND municipio='${req.query.municipio}' 
       ORDER BY RAND() LIMIT 0,${req.query.cantidad}
     `);
@@ -26,11 +27,10 @@ const getRegistros = async (req, res = response) => {
 };
 
 const crearRegistro = async (req, res) => {
-  const { municipio, boleta, status, premio } = req.body;
+  const { municipio, nombre, cedula, status, premio } = req.body;
 
   try {
-    // Verificar si la boleta ya existe en la base de datos
-    const registroExistente = await Regmujer.findOne({ where: { boleta } });
+    const registroExistente = await TbMadres.findOne({ where: { cedula } });
 
     if (registroExistente) {
       return res.status(203).json({
@@ -39,18 +39,21 @@ const crearRegistro = async (req, res) => {
       });
     }
 
-    // Crear un nuevo registro si la boleta no existe
-    const nuevoRegistro = await Regmujer.create({
+    const nuevoRegistro = await TbMadres.create({
       municipio,
-      boleta,
-      status: 1,
+      nombre,
+      cedula,
+      status,
       premio,
     });
 
     res.status(201).json({
       ok: true,
-      boleta: nuevoRegistro.boleta,
+      municipio: nuevoRegistro.municipio,
+      nombre: nuevoRegistro.nombre,
+      cedula: nuevoRegistro.cedula,
       status: nuevoRegistro.status,
+      premio: nuevoRegistro.premio,
     });
   } catch (error) {
     return res.status(500).json({
@@ -61,17 +64,13 @@ const crearRegistro = async (req, res) => {
   }
 };
 
-const actuzalizarRegistros = async (req, res = response) => {
-  // const boletaId = req.params.id;
-  // const status = req.body.status;
-  // const premio = req.body.premio;
-  const { boleta, status, premio } = req.body;
+const actualizarRegistros = async (req, res = response) => {
+  const { status, premio } = req.body;
 
-  console.log(req.params.id);
   try {
-    const registroActualizado = await Regmujer.update(
-      { status: status, premio: premio },
-      { where: { boleta: req.params.id } }
+    const registroActualizado = await TbMadres.update(
+      { status, premio },
+      { where: { id: req.params.id } }
     );
 
     if (registroActualizado[0] === 0) {
@@ -92,9 +91,53 @@ const actuzalizarRegistros = async (req, res = response) => {
     });
   }
 };
+const regPremio = async (req, res) => {
+  const {
+    premio,
+    la_romana,
+    villa_hermosa,
+    caleta,
+    cumayasa,
+    guaymate,
+    slug_premio,
+  } = req.body;
+
+  try {
+    const registroExistente = await TbPremios.findOne({ where: { premio } });
+
+    if (registroExistente) {
+      return res.status(203).json({
+        ok: false,
+        msg: "ERROR: Este premio ha sido registrado",
+      });
+    }
+
+    const nuevoRegistro = await TbPremios.create({
+      premio,
+      la_romana,
+      villa_hermosa,
+      caleta,
+      cumayasa,
+      guaymate,
+      slug_premio,
+    });
+
+    res.status(201).json({
+      ok: true,
+      premio: nuevoRegistro.premio,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Error al crear el registro",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   getRegistros,
   crearRegistro,
-  actuzalizarRegistros,
+  actualizarRegistros,
+  regPremio,
 };

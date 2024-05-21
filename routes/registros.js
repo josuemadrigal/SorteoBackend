@@ -5,7 +5,8 @@ const { check } = require("express-validator");
 const {
   getRegistros,
   crearRegistro,
-  actuzalizarRegistros,
+  actualizarRegistros,
+  regPremio,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -16,10 +17,17 @@ router.get("/", getRegistros);
 //Crear eventos
 router.post(
   "/",
-  [check("boleta", "La boleta es necesaria").not().isEmpty(), validarCampos],
+  [check("cedula", "La cedula es necesaria").not().isEmpty(), validarCampos],
   crearRegistro
 );
+
+router.post(
+  "/regPremio",
+  [check("premio", "El premio es necesario").not().isEmpty(), validarCampos],
+  regPremio
+);
+
 //actualizar
-router.put("/:id", actuzalizarRegistros);
+router.put("/:id", actualizarRegistros);
 
 module.exports = router;
