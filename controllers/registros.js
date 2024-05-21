@@ -1,27 +1,54 @@
 const { response } = require("express");
 
 var { connection, sequelize, query } = require("../database/database");
-const { v1: uuidv1, v4: uuidv4 } = require("uuid");
+//const { v1: uuidv1, v4: uuidv4 } = require("uuid");
 const TbMadres = require("../models/Tb_madres");
 const TbPremios = require("../models/Tb_premios"); // Corrected the import
+const TbCedulas = require("../models/Tb_cedulas");
+
+// const getRegistros = async (req, res = response) => {
+//   try {
+//     const registros = await sequelize.query(`
+//       SELECT * FROM tb_madres
+//       WHERE status=${req.query.status} AND municipio='${req.query.municipio}'
+//       ORDER BY RAND() LIMIT 0,${req.query.cantidad}
+//     `);
+
+//     res.json({
+//       ok: true,
+//       registros: registros[0], // Los resultados se encuentran en el índice 0 del array
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       ok: false,
+//       msg: "Error al obtener registros",
+//     });
+//   }
+// };
 
 const getRegistros = async (req, res = response) => {
+  const { status, municipio, cantidad } = req.query;
+
   try {
-    const registros = await sequelize.query(`
-      SELECT * FROM tb_madres 
-      WHERE status=${req.query.status} AND municipio='${req.query.municipio}' 
-      ORDER BY RAND() LIMIT 0,${req.query.cantidad}
-    `);
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_madres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
+      {
+        replacements: { status, municipio, cantidad: parseInt(cantidad) },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     res.json({
       ok: true,
-      registros: registros[0], // Los resultados se encuentran en el índice 0 del array
+      registros,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       ok: false,
       msg: "Error al obtener registros",
+      error: error.message,
     });
   }
 };
@@ -49,11 +76,7 @@ const crearRegistro = async (req, res) => {
 
     res.status(201).json({
       ok: true,
-      municipio: nuevoRegistro.municipio,
-      nombre: nuevoRegistro.nombre,
-      cedula: nuevoRegistro.cedula,
-      status: nuevoRegistro.status,
-      premio: nuevoRegistro.premio,
+      registro: nuevoRegistro,
     });
   } catch (error) {
     return res.status(500).json({
@@ -66,31 +89,34 @@ const crearRegistro = async (req, res) => {
 
 const actualizarRegistros = async (req, res = response) => {
   const { status, premio } = req.body;
+  const { id } = req.params;
 
   try {
-    const registroActualizado = await TbMadres.update(
+    const [updated] = await TbMadres.update(
       { status, premio },
-      { where: { id: req.params.id } }
+      { where: { id } }
     );
 
-    if (registroActualizado[0] === 0) {
+    if (updated === 0) {
       return res.status(404).json({
         ok: false,
         msg: "Registro no existe por ID",
       });
     }
-
     res.json({
       ok: true,
       msg: "Registro actualizado correctamente",
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       ok: false,
-      msg: JSON.stringify(error),
+      msg: "Error al actualizar el registro",
+      error: error.message,
     });
   }
 };
+
 const regPremio = async (req, res) => {
   const {
     premio,
@@ -126,12 +152,44 @@ const regPremio = async (req, res) => {
 
     res.status(201).json({
       ok: true,
-      premio: nuevoRegistro.premio,
+      premio: nuevoRegistro,
     });
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: "Error al crear el registro",
+      msg: "Error al registrar premio",
+      error: error.message,
+    });
+  }
+};
+
+const regCedula = async (req, res) => {
+  const { nombre, cedula, status } = req.body;
+
+  try {
+    const registroExistente = await TbCedulas.findOne({ where: { cedula } });
+
+    if (registroExistente) {
+      return res.status(203).json({
+        ok: false,
+        msg: "ERROR: Esta cedula exite en la base de datos",
+      });
+    }
+
+    const nuevoRegistro = await TbCedulas.create({
+      nombre,
+      cedula,
+      status,
+    });
+
+    res.status(201).json({
+      ok: true,
+      cedula: nuevoRegistro,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Error al registrar cedula",
       error: error.message,
     });
   }
@@ -142,4 +200,5 @@ module.exports = {
   crearRegistro,
   actualizarRegistros,
   regPremio,
+  regCedula,
 };
