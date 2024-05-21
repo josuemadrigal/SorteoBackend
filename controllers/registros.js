@@ -100,6 +100,7 @@ const regPremio = async (req, res) => {
     cumayasa,
     guaymate,
     slug_premio,
+    status,
   } = req.body;
 
   try {
@@ -120,6 +121,7 @@ const regPremio = async (req, res) => {
       cumayasa,
       guaymate,
       slug_premio,
+      status,
     });
 
     res.status(201).json({
