@@ -28,6 +28,9 @@ const TbPremios = sequelize.define(
     slug_premio: {
       type: DataTypes.STRING,
     },
+    status: {
+      type: DataTypes.STRING,
+    },
   },
   {
     timestamps: true, // Enable timestamps
