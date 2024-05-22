@@ -27,32 +27,6 @@ const TbCedulas = require("../models/Tb_cedulas");
 //   }
 // };
 
-const getRegistros = async (req, res = response) => {
-  const { status, municipio, cantidad } = req.query;
-
-  try {
-    const registros = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
-      {
-        replacements: { status, municipio, cantidad: parseInt(cantidad) },
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
-
-    res.json({
-      ok: true,
-      registros,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      ok: false,
-      msg: "Error al obtener registros",
-      error: error.message,
-    });
-  }
-};
-
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio } = req.body;
 
@@ -87,14 +61,40 @@ const crearRegistro = async (req, res) => {
   }
 };
 
+const getRegistros = async (req, res = response) => {
+  const { status, municipio, cantidad } = req.query;
+
+  try {
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_madres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
+      {
+        replacements: { status, municipio, cantidad: parseInt(cantidad) },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
 const actualizarRegistros = async (req, res = response) => {
   const { status, premio } = req.body;
-  const { id } = req.params;
+  const { nombre } = req.params;
 
   try {
     const [updated] = await TbMadres.update(
       { status, premio },
-      { where: { id } }
+      { where: { nombre } }
     );
 
     if (updated === 0) {
@@ -195,8 +195,75 @@ const regCedula = async (req, res) => {
   }
 };
 
+const getCedula = async (req, res = response) => {
+  const { cedula } = req.query;
+
+  if (!cedula) {
+    return res.status(400).json({
+      ok: false,
+      msg: "La cédula es requerida",
+    });
+  }
+
+  try {
+    const [registro] = await sequelize.query(
+      `SELECT * FROM tb_cedulas WHERE cedula = :cedula`,
+      {
+        replacements: { cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!registro) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No se encontró un registro con esa cédula",
+      });
+    }
+
+    res.json({
+      ok: true,
+      registro,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
+// const getCedula = async (req, res = response) => {
+//   const { cedula } = req.query;
+
+//   try {
+//     const registros = await sequelize.query(
+//       `SELECT * FROM tb_cedulas WHERE cedula=:cedula`,
+//       {
+//         replacements: { cedula },
+//         type: sequelize.QueryTypes.SELECT,
+//       }
+//     );
+
+//     res.json({
+//       ok: true,
+//       registros,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       ok: false,
+//       msg: "Error al obtener registros",
+//       error: error.message,
+//     });
+//   }
+// };
+
 module.exports = {
   getRegistros,
+  getCedula,
   crearRegistro,
   actualizarRegistros,
   regPremio,

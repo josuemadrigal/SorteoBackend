@@ -7,6 +7,7 @@ const {
   actualizarRegistros,
   regPremio,
   regCedula,
+  getCedula,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -28,6 +29,7 @@ const validarCantidadMayorCero = (campo) =>
 
 // Obtener registros
 router.get("/", getRegistros);
+router.get("/cedula", getCedula);
 
 // Crear un nuevo registro
 router.post(
@@ -63,9 +65,9 @@ router.post("/regCedula", [validarCedula, validarCampos], regCedula);
 
 // Actualizar un registro
 router.put(
-  "/:id",
+  "/:nombre",
   [
-    check("id", "El ID debe ser un número válido").isNumeric(),
+    check("nombre", "El ID debe ser un número válido").not().isEmpty(),
     check("status", "El status es necesario y debe ser un número").isNumeric(),
     validarPremio,
     validarCampos,
