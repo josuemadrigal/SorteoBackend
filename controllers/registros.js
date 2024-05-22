@@ -6,27 +6,6 @@ const TbMadres = require("../models/Tb_madres");
 const TbPremios = require("../models/Tb_premios"); // Corrected the import
 const TbCedulas = require("../models/Tb_cedulas");
 
-// const getRegistros = async (req, res = response) => {
-//   try {
-//     const registros = await sequelize.query(`
-//       SELECT * FROM tb_madres
-//       WHERE status=${req.query.status} AND municipio='${req.query.municipio}'
-//       ORDER BY RAND() LIMIT 0,${req.query.cantidad}
-//     `);
-
-//     res.json({
-//       ok: true,
-//       registros: registros[0], // Los resultados se encuentran en el índice 0 del array
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       ok: false,
-//       msg: "Error al obtener registros",
-//     });
-//   }
-// };
-
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio } = req.body;
 
@@ -234,6 +213,89 @@ const getCedula = async (req, res = response) => {
     });
   }
 };
+const getParticipando = async (req, res = response) => {
+  const { cedula } = req.query;
+
+  if (!cedula) {
+    return res.status(400).json({
+      ok: false,
+      msg: "La cédula es requerida",
+    });
+  }
+
+  try {
+    const [registro] = await sequelize.query(
+      `SELECT cedula FROM tb_cedulas WHERE cedula = :cedula`,
+      {
+        replacements: { cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!registro) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No se encontró un registro con esa cédula",
+      });
+    }
+
+    const [participacion] = await sequelize.query(
+      `SELECT * FROM tb_madres WHERE cedula = :cedula`,
+      {
+        replacements: { cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (participacion) {
+      return res.json({
+        ok: true,
+        participando: true,
+        msg: "Esta cédula ya está participando",
+      });
+    } else {
+      return res.json({
+        ok: true,
+        participando: false,
+        msg: "Esta cédula no está participando",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
+const getPremios = async (req, res = response) => {
+  try {
+    const [premios] = await sequelize.query(
+      "SELECT slug_premio, premio FROM tb_premios WHERE status = 1"
+    );
+
+    if (premios.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No hay premios disponibles",
+      });
+    }
+
+    res.json({
+      ok: true,
+      premios,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener premios",
+      error: error.message,
+    });
+  }
+};
 
 // const getCedula = async (req, res = response) => {
 //   const { cedula } = req.query;
@@ -264,6 +326,8 @@ const getCedula = async (req, res = response) => {
 module.exports = {
   getRegistros,
   getCedula,
+  getPremios,
+  getParticipando,
   crearRegistro,
   actualizarRegistros,
   regPremio,
