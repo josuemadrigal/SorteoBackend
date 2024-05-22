@@ -194,7 +194,7 @@ const getCedula = async (req, res = response) => {
     );
 
     if (!registro) {
-      return res.status(404).json({
+      return res.status(400).json({
         ok: false,
         msg: "No se encontró un registro con esa cédula",
       });
@@ -225,7 +225,7 @@ const getParticipando = async (req, res = response) => {
 
   try {
     const [registro] = await sequelize.query(
-      `SELECT cedula FROM tb_cedulas WHERE cedula = :cedula`,
+      `SELECT cedula FROM tb_madres WHERE cedula = :cedula`,
       {
         replacements: { cedula },
         type: sequelize.QueryTypes.SELECT,
@@ -235,7 +235,7 @@ const getParticipando = async (req, res = response) => {
     if (!registro) {
       return res.status(404).json({
         ok: false,
-        msg: "No se encontró un registro con esa cédula",
+        msg: "No se encontró participando esa cédula",
       });
     }
 
