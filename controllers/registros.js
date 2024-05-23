@@ -5,6 +5,7 @@ var { connection, sequelize, query } = require("../database/database");
 const TbMadres = require("../models/Tb_madres");
 const TbPremios = require("../models/Tb_premios"); // Corrected the import
 const TbCedulas = require("../models/Tb_cedulas");
+const TbTemporal = require("../models/Tb_temporal");
 
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio } = req.body;
@@ -40,6 +41,31 @@ const crearRegistro = async (req, res) => {
   }
 };
 
+const crearTemporal = async (req, res) => {
+  const { municipio, nombre, cedula, status, premio } = req.body;
+
+  try {
+    const nuevoRegistroTemporal = await TbTemporal.create({
+      municipio,
+      nombre,
+      cedula,
+      status,
+      premio,
+    });
+
+    res.status(201).json({
+      ok: true,
+      registro: nuevoRegistroTemporal,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Error al crear el registro temporal",
+      error: error.message,
+    });
+  }
+};
+
 const getRegistros = async (req, res = response) => {
   const { status, municipio, cantidad } = req.query;
 
@@ -67,13 +93,13 @@ const getRegistros = async (req, res = response) => {
 };
 
 const actualizarRegistros = async (req, res = response) => {
-  const { status, premio } = req.body;
-  const { nombre } = req.params;
+  const { status, premio, ronda } = req.body;
+  const { cedula } = req.params;
 
   try {
     const [updated] = await TbMadres.update(
-      { status, premio },
-      { where: { nombre } }
+      { status, premio, ronda },
+      { where: { cedula } }
     );
 
     if (updated === 0) {
@@ -329,6 +355,7 @@ module.exports = {
   getPremios,
   getParticipando,
   crearRegistro,
+  crearTemporal,
   actualizarRegistros,
   regPremio,
   regCedula,
