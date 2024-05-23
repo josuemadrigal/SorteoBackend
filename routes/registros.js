@@ -10,6 +10,7 @@ const {
   getCedula,
   getPremios,
   getParticipando,
+  crearTemporal,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -49,6 +50,20 @@ router.post(
   crearRegistro
 );
 
+// Crear un nuevo registro Temporal
+router.post(
+  "/temporal",
+  [
+    check("municipio", "El municipio es necesario").not().isEmpty(),
+    check("nombre", "El nombre es necesario").not().isEmpty(),
+    validarCedula,
+    check("status", "El status es necesario y debe ser un número").isNumeric(),
+    validarPremio,
+    validarCampos,
+  ],
+  crearTemporal
+);
+
 // Registrar un premio
 router.post(
   "/regPremio",
@@ -56,8 +71,8 @@ router.post(
     validarPremio,
     validarCantidadMayorCero("la_romana"),
     validarCantidadMayorCero("villa_hermosa"),
-    validarCantidadMayorCero("caleta"),
-    validarCantidadMayorCero("cumayasa"),
+    // validarCantidadMayorCero("caleta"),
+    // validarCantidadMayorCero("cumayasa"),
     validarCantidadMayorCero("guaymate"),
     validarCampos,
   ],
@@ -69,9 +84,9 @@ router.post("/regCedula", [validarCedula, validarCampos], regCedula);
 
 // Actualizar un registro
 router.put(
-  "/:nombre",
+  "/:cedula",
   [
-    check("nombre", "El ID debe ser un número válido").not().isEmpty(),
+    check("cedula", "El ID debe ser un número válido").not().isEmpty(),
     check("status", "El status es necesario y debe ser un número").isNumeric(),
     validarPremio,
     validarCampos,

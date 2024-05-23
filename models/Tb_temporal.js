@@ -2,8 +2,8 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../database/database"); // Adjust the path
 
-const TbMadres = sequelize.define(
-  "tb_madres",
+const TbTemporal = sequelize.define(
+  "tb_temporal",
   {
     municipio: {
       type: DataTypes.STRING,
@@ -25,13 +25,10 @@ const TbMadres = sequelize.define(
     premio: {
       type: DataTypes.STRING,
     },
-    ronda: {
-      type: DataTypes.STRING,
-    },
   },
   {
     timestamps: true, // Enable timestamps
   }
 );
 
-module.exports = TbMadres;
+module.exports = TbTemporal;
