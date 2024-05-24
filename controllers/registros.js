@@ -17,6 +17,7 @@ const crearRegistro = async (req, res) => {
       return res.status(203).json({
         ok: false,
         msg: "ERROR: Esta boleta ha sido registrada",
+        registroExistente,
       });
     }
 
@@ -250,20 +251,20 @@ const getParticipando = async (req, res = response) => {
   }
 
   try {
-    const [registro] = await sequelize.query(
-      `SELECT cedula FROM tb_madres WHERE cedula = :cedula`,
-      {
-        replacements: { cedula },
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
+    // const [registro] = await sequelize.query(
+    //   `SELECT cedula FROM tb_madres WHERE cedula = :cedula`,
+    //   {
+    //     replacements: { cedula },
+    //     type: sequelize.QueryTypes.SELECT,
+    //   }
+    // );
 
-    if (!registro) {
-      return res.status(404).json({
-        ok: false,
-        msg: "No se encontró participando esa cédula",
-      });
-    }
+    // if (!registro) {
+    //   return res.status(404).json({
+    //     ok: false,
+    //     msg: "No se encontró participando esa cédula",
+    //   });
+    // }
 
     const [participacion] = await sequelize.query(
       `SELECT * FROM tb_madres WHERE cedula = :cedula`,
@@ -278,6 +279,7 @@ const getParticipando = async (req, res = response) => {
         ok: true,
         participando: true,
         msg: "Esta cédula ya está participando",
+        participacion,
       });
     } else {
       return res.json({
