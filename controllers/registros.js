@@ -301,7 +301,7 @@ const getParticipando = async (req, res = response) => {
 const getPremios = async (req, res = response) => {
   try {
     const [premios] = await sequelize.query(
-      "SELECT slug_premio, premio FROM tb_premios WHERE status = 1"
+      "SELECT * FROM tb_premios WHERE status = 1"
     );
 
     if (premios.length === 0) {
