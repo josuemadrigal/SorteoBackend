@@ -10,6 +10,7 @@ const {
   getCedula,
   getPremios,
   getParticipando,
+  getRegistrosList,
   crearTemporal,
 } = require("../controllers/registros");
 
@@ -32,6 +33,7 @@ const validarCantidadMayorCero = (campo) =>
 
 // Obtener registros
 router.get("/", getRegistros);
+router.get("/getGanadores", getRegistrosList);
 router.get("/cedula", getCedula);
 router.get("/getPremios", getPremios);
 router.get("/getParticipando", getParticipando);

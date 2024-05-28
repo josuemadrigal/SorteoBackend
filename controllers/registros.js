@@ -325,6 +325,32 @@ const getPremios = async (req, res = response) => {
   }
 };
 
+const getRegistrosList = async (req, res = response) => {
+  const { municipio, ronda, premio } = req.query;
+
+  try {
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_madres WHERE status='3' AND municipio=:municipio AND ronda=:ronda AND premio=:premio `,
+      {
+        replacements: { municipio, ronda: parseInt(ronda), premio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros ganadores",
+      error: error.message,
+    });
+  }
+};
+
 // const getCedula = async (req, res = response) => {
 //   const { cedula } = req.query;
 
@@ -356,6 +382,7 @@ module.exports = {
   getCedula,
   getPremios,
   getParticipando,
+  getRegistrosList,
   crearRegistro,
   crearTemporal,
   actualizarRegistros,
