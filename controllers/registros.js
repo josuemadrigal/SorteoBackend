@@ -221,7 +221,7 @@ const getCedula = async (req, res = response) => {
     );
 
     if (!registro) {
-      return res.status(400).json({
+      return res.json({
         ok: false,
         msg: "No se encontró un registro con esa cédula",
       });
