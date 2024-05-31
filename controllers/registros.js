@@ -352,6 +352,49 @@ const getRegistrosList = async (req, res = response) => {
   }
 };
 
+const regRonda = async (req, res) => {
+  const { municipio, premio, ronda, cantidad, status } = req.body;
+
+  try {
+    // const registroExistente = await sequelize.query(
+    //   `SELECT * FROM tb_rondas WHERE municipio=:municipio AND ronda=:ronda AND premio=:premio `,
+    //   {
+    //     replacements: { municipio: municipio, ronda: ronda, premio: premio },
+    //     type: sequelize.QueryTypes.SELECT,
+    //   }
+    // );
+    // const registroExistente = await TbPremios.findOne({
+    //   where: { municipio: municipio, premio: premio, ronda: ronda },
+    // });
+
+    // if (registroExistente) {
+    //   return res.status(203).json({
+    //     ok: false,
+    //     msg: "ERROR: Esta ronda ha sido registrada",
+    //   });
+    // }
+
+    const nuevoRegistro = await TbRondas.create({
+      municipio,
+      premio,
+      ronda,
+      cantidad,
+      status,
+    });
+
+    res.status(201).json({
+      ok: true,
+      premio: nuevoRegistro,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Esta ronda ha sido registrada",
+      error: error.message,
+    });
+  }
+};
+
 const getRonda = async (req, res = response) => {
   const { municipio, premio } = req.query;
 
@@ -364,6 +407,32 @@ const getRonda = async (req, res = response) => {
       }
     );
 
+    res.json({
+      ok: true,
+      ronda: ronda,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener las rondas",
+      error: error.message,
+    });
+  }
+};
+
+const getRondaNum = async (req, res = response) => {
+  const { municipio, premio } = req.query;
+
+  try {
+    const ronda = await sequelize.query(
+      `SELECT ronda FROM tb_rondas WHERE status='activa' AND municipio=:municipio AND premio=:premio ORDER BY ronda desc LIMIT 1`,
+      {
+        replacements: { municipio, premio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    console.log(ronda);
     res.json({
       ok: true,
       ronda: ronda,
@@ -407,32 +476,6 @@ const updateRonda = async (req, res = response) => {
   }
 };
 
-// const getCedula = async (req, res = response) => {
-//   const { cedula } = req.query;
-
-//   try {
-//     const registros = await sequelize.query(
-//       `SELECT * FROM tb_cedulas WHERE cedula=:cedula`,
-//       {
-//         replacements: { cedula },
-//         type: sequelize.QueryTypes.SELECT,
-//       }
-//     );
-
-//     res.json({
-//       ok: true,
-//       registros,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       ok: false,
-//       msg: "Error al obtener registros",
-//       error: error.message,
-//     });
-//   }
-// };
-
 module.exports = {
   getRegistros,
   getCedula,
@@ -440,8 +483,10 @@ module.exports = {
   getParticipando,
   getRegistrosList,
   getRonda,
+  getRondaNum,
   crearRegistro,
   crearTemporal,
+  regRonda,
   actualizarRegistros,
   updateRonda,
   regPremio,

@@ -13,7 +13,9 @@ const {
   getParticipando,
   getRegistrosList,
   getRonda,
+  regRonda,
   crearTemporal,
+  getRondaNum,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -40,6 +42,7 @@ router.get("/cedula", getCedula);
 router.get("/getPremios", getPremios);
 router.get("/getParticipando", getParticipando);
 router.get("/getRonda", getRonda);
+router.get("/getRondaNum", getRondaNum);
 
 // Crear un nuevo registro
 router.post(
@@ -76,12 +79,26 @@ router.post(
     validarPremio,
     validarCantidadMayorCero("la_romana"),
     validarCantidadMayorCero("villa_hermosa"),
-    // validarCantidadMayorCero("caleta"),
-    // validarCantidadMayorCero("cumayasa"),
+    validarCantidadMayorCero("caleta"),
+    validarCantidadMayorCero("cumayasa"),
     validarCantidadMayorCero("guaymate"),
     validarCampos,
   ],
   regPremio
+);
+
+router.post(
+  "/regRonda",
+  [
+    check("municipio", "El municipio es necesario").not().isEmpty(),
+    check("premio", "El premio es necesario").not().isEmpty(),
+    check("ronda", "La ronda es necesaria").not().isEmpty(),
+    check("cantidad", "La cantidad es necesaria").not().isEmpty(),
+    check("status", "El status es necesario").not().isEmpty(),
+
+    validarCampos,
+  ],
+  regRonda
 );
 
 // Registrar una cédula
