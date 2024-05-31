@@ -5,12 +5,14 @@ const {
   getRegistros,
   crearRegistro,
   actualizarRegistros,
+  updateRonda,
   regPremio,
   regCedula,
   getCedula,
   getPremios,
   getParticipando,
   getRegistrosList,
+  getRonda,
   crearTemporal,
 } = require("../controllers/registros");
 
@@ -37,6 +39,7 @@ router.get("/getGanadores", getRegistrosList);
 router.get("/cedula", getCedula);
 router.get("/getPremios", getPremios);
 router.get("/getParticipando", getParticipando);
+router.get("/getRonda", getRonda);
 
 // Crear un nuevo registro
 router.post(
@@ -89,11 +92,25 @@ router.put(
   "/:cedula",
   [
     check("cedula", "El ID debe ser un número válido").not().isEmpty(),
-    check("status", "El status es necesario y debe ser un número").isNumeric(),
+    check(
+      "status",
+      "El status es necesario111y debe ser un número"
+    ).isNumeric(),
     validarPremio,
     validarCampos,
   ],
   actualizarRegistros
+);
+
+router.put(
+  "/updateRonda/:id",
+  [
+    check("estado", "El status es obligatorio").not().isEmpty(),
+    check("municipio", "El municipio es obligatorio").not().isEmpty(),
+    check("ronda", "La ronda es obligatoria").not().isEmpty(),
+    check("premio", "El premio es obligatoria").not().isEmpty(),
+  ],
+  updateRonda
 );
 
 module.exports = router;
