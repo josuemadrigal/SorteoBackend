@@ -6,6 +6,7 @@ const TbMadres = require("../models/Tb_madres");
 const TbPremios = require("../models/Tb_premios"); // Corrected the import
 const TbCedulas = require("../models/Tb_cedulas");
 const TbTemporal = require("../models/Tb_temporal");
+const TbRondas = require("../models/Tb_rondas");
 
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio } = req.body;
@@ -351,6 +352,61 @@ const getRegistrosList = async (req, res = response) => {
   }
 };
 
+const getRonda = async (req, res = response) => {
+  const { municipio, premio } = req.query;
+
+  try {
+    const ronda = await sequelize.query(
+      `SELECT * FROM tb_rondas WHERE status='activa' AND municipio=:municipio AND premio=:premio ORDER BY ronda LIMIT 1`,
+      {
+        replacements: { municipio, premio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      ronda: ronda,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener las rondas",
+      error: error.message,
+    });
+  }
+};
+
+const updateRonda = async (req, res = response) => {
+  const { estado, municipio, ronda, premio } = req.body;
+  const { id } = req.params;
+  try {
+    const [updated] = await TbRondas.update(
+      { status: estado },
+      { where: { id } }
+    );
+
+    if (updated === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No existe la ronda",
+      });
+    }
+    res.json({
+      ok: true,
+      msg: "Ronda desactivada correctamente",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al actualizar el registro",
+      error: error.message,
+    });
+  }
+};
+
 // const getCedula = async (req, res = response) => {
 //   const { cedula } = req.query;
 
@@ -383,9 +439,11 @@ module.exports = {
   getPremios,
   getParticipando,
   getRegistrosList,
+  getRonda,
   crearRegistro,
   crearTemporal,
   actualizarRegistros,
+  updateRonda,
   regPremio,
   regCedula,
 };
