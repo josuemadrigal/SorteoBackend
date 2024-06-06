@@ -24,6 +24,7 @@ const TbMadres = sequelize.define(
     },
     premio: {
       type: DataTypes.STRING,
+      allowNull: false,
     },
     ronda: {
       type: DataTypes.STRING,

@@ -476,8 +476,67 @@ const updateRonda = async (req, res = response) => {
   }
 };
 
+const getRegistroByCedula = async (req, res = response) => {
+  const { status, cedula } = req.query;
+
+  try {
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_madres WHERE status=:status AND cedula=:cedula`,
+      {
+        replacements: { status, cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros por cedula",
+      error: error.message,
+    });
+  }
+};
+
+const actualizarRegistroByCedula = async (req, res = response) => {
+  console.log("cedu: ", cedula);
+  const { status, cedula } = req.body;
+  //const { cedula } = req.params;
+  console.log("cedu: ", cedula);
+
+  try {
+    const [updated] = await TbMadres.update(
+      { status: status },
+      { where: { cedula } }
+    );
+
+    if (updated === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Registro no existe por ID",
+      });
+    }
+    res.json({
+      ok: true,
+      msg: "Registro actualizado correctamente",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al actualizar el registro",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getRegistros,
+  getRegistroByCedula,
   getCedula,
   getPremios,
   getParticipando,
@@ -488,6 +547,7 @@ module.exports = {
   crearTemporal,
   regRonda,
   actualizarRegistros,
+  actualizarRegistroByCedula,
   updateRonda,
   regPremio,
   regCedula,
