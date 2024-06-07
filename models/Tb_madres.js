@@ -18,6 +18,15 @@ const TbMadres = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    cedula: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    coment: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.INTEGER,
       allowNull: false,

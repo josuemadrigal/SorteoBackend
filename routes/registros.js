@@ -124,9 +124,10 @@ router.put(
 
 // Actualizar un registro
 router.put(
-  "/upDateByCedula",
+  "/upDateByCedula/:cedula",
   [
     check("cedula", "El ID debe ser un número válido").not().isEmpty(),
+
     check("status", "El status es necesario y debe ser un número").isNumeric(),
     validarCampos,
   ],

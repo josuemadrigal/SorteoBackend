@@ -481,7 +481,7 @@ const getRegistroByCedula = async (req, res = response) => {
 
   try {
     const registros = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE status=:status AND cedula=:cedula`,
+      `SELECT * FROM tb_madres WHERE (status=:status OR status=4) AND cedula=:cedula`,
       {
         replacements: { status, cedula },
         type: sequelize.QueryTypes.SELECT,
@@ -503,21 +503,18 @@ const getRegistroByCedula = async (req, res = response) => {
 };
 
 const actualizarRegistroByCedula = async (req, res = response) => {
-  console.log("cedu: ", cedula);
-  const { status, cedula } = req.body;
-  //const { cedula } = req.params;
-  console.log("cedu: ", cedula);
-
+  const { coment, status } = req.body;
+  const { cedula } = req.params;
   try {
     const [updated] = await TbMadres.update(
-      { status: status },
+      { coment: coment, status: status },
       { where: { cedula } }
     );
 
     if (updated === 0) {
       return res.status(404).json({
         ok: false,
-        msg: "Registro no existe por ID",
+        msg: "Registro no existe con esta cedula",
       });
     }
     res.json({
