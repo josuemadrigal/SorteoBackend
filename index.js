@@ -6,23 +6,7 @@ const { dbMySql } = require("./database/database");
 
 const app = express();
 
-const corsOptions = {
-  origin: "https://app.eduardespiritusanto.com",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Origin",
-    "Accept",
-    "X-Requested-With",
-    "Access-Control-Request-Method",
-    "Access-Control-Request-Headers",
-  ],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(express.static("public"));
 
