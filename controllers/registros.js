@@ -3,31 +3,52 @@ const { response } = require("express");
 var { connection, sequelize, query } = require("../database/database");
 //const { v1: uuidv1, v4: uuidv4 } = require("uuid");
 const TbMadres = require("../models/Tb_madres");
+const TbPadres = require("../models/Tb_padres");
 const TbPremios = require("../models/Tb_premios"); // Corrected the import
 const TbCedulas = require("../models/Tb_cedulas");
 const TbTemporal = require("../models/Tb_temporal");
 const TbRondas = require("../models/Tb_rondas");
 
 const crearRegistro = async (req, res) => {
-  const { municipio, nombre, cedula, status, premio } = req.body;
+  const { municipio, nombre, cedula, status, premio, boleto } = req.body;
 
   try {
-    const registroExistente = await TbMadres.findOne({ where: { cedula } });
+    const registroExistente = await TbPadres.findOne({
+      where: { cedula },
+    });
+
+    const boletoExistente = await TbPadres.findOne({
+      where: { boleto },
+    });
 
     if (registroExistente) {
       return res.status(203).json({
+        ok: false,
+        msg: "ERROR: Esta cedula ha sido registrada",
+        registroExistente,
+      });
+    }
+
+    if (boletoExistente) {
+      return res.status(206).json({
         ok: false,
         msg: "ERROR: Esta boleta ha sido registrada",
         registroExistente,
       });
     }
 
-    const nuevoRegistro = await TbMadres.create({
+    // const nuevaCedula = await TbCedulas.create({
+    //   nombre,
+    //   cedula,
+    // });
+
+    const nuevoRegistro = await TbPadres.create({
       municipio,
       nombre,
       cedula,
       status,
       premio,
+      boleto,
     });
 
     res.status(201).json({
