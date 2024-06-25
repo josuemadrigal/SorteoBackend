@@ -61,6 +61,20 @@ router.post(
   crearRegistro
 );
 
+// Crear un nuevo registroPADRE
+router.post(
+  "/padres",
+  [
+    check("municipio", "El municipio es necesario").not().isEmpty(),
+    check("nombre", "El nombre es necesario").not().isEmpty(),
+    validarCedula,
+    check("status", "El status es necesario y debe ser un número").isNumeric(),
+    validarPremio,
+    validarCampos,
+  ],
+  crearRegistro
+);
+
 // Crear un nuevo registro Temporal
 router.post(
   "/temporal",
