@@ -26,14 +26,6 @@ const sslOptions = {
   ),
 };
 
-https.createServer(sslOptions, app).listen(process.env.PORT, () => {
-  console.log(`Servidor activo puerto =>: ${process.env.PORT}`);
-});
-
-appHttp.get("*", (req, res) => {
-  res.redirect(`https://${req.headers.host}${req.url}`);
-});
-
-http.createServer(appHttp).listen(process.env.PORT, () => {
-  console.log(`HTTP Server active on port: ${process.env.PORT}`);
+https.createServer(options, app).listen(4001, () => {
+  console.log(`Servidor HTTPS activo en el puerto 4001`);
 });
