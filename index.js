@@ -1,6 +1,4 @@
 const express = require("express");
-const appHttp = express();
-const fs = require("fs");
 require("dotenv").config();
 const cors = require("cors");
 
@@ -18,15 +16,6 @@ app.use("/api/registros", require("./routes/registros"));
 
 dbMySql();
 
-const options = {
-  key: fs.readFileSync(
-    "/etc/letsencrypt/live/app.eduardespiritusanto.com/privkey.pem"
-  ),
-  cert: fs.readFileSync(
-    "/etc/letsencrypt/live/app.eduardespiritusanto.com/fullchain.pem"
-  ),
-};
-
-https.createServer(options, app).listen(4001, () => {
-  console.log(`Servidor HTTPS activo en el puerto 4001`);
+app.listen(process.env.PORT, () => {
+  console.log(`Servidor activo puerto =>: ${process.env.PORT}`);
 });
