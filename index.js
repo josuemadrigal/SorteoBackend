@@ -1,5 +1,6 @@
 const express = require("express");
 const appHttp = express();
+const fs = require("fs");
 require("dotenv").config();
 const cors = require("cors");
 
@@ -17,7 +18,7 @@ app.use("/api/registros", require("./routes/registros"));
 
 dbMySql();
 
-const sslOptions = {
+const options = {
   key: fs.readFileSync(
     "/etc/letsencrypt/live/app.eduardespiritusanto.com/privkey.pem"
   ),
