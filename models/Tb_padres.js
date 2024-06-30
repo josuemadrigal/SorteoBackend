@@ -38,7 +38,12 @@ const TbPadres = sequelize.define(
     ronda: {
       type: DataTypes.STRING,
     },
+    telefono: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
+
   {
     timestamps: true, // Enable timestamps
   }

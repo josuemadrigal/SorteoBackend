@@ -10,7 +10,8 @@ const TbTemporal = require("../models/Tb_temporal");
 const TbRondas = require("../models/Tb_rondas");
 
 const crearRegistro = async (req, res) => {
-  const { municipio, nombre, cedula, status, premio, boleto } = req.body;
+  const { municipio, nombre, cedula, status, premio, boleto, telefono } =
+    req.body;
 
   try {
     const registroExistente = await TbPadres.findOne({
@@ -49,6 +50,7 @@ const crearRegistro = async (req, res) => {
       status,
       premio,
       boleto,
+      telefono,
     });
 
     res.status(201).json({
