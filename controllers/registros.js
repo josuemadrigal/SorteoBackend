@@ -18,9 +18,9 @@ const crearRegistro = async (req, res) => {
       where: { cedula },
     });
 
-    const boletoExistente = await TbPadres.findOne({
-      where: { boleto },
-    });
+    // const boletoExistente = await TbPadres.findOne({
+    //   where: { boleto },
+    // });
 
     if (registroExistente) {
       return res.status(203).json({
@@ -30,13 +30,13 @@ const crearRegistro = async (req, res) => {
       });
     }
 
-    if (boletoExistente) {
-      return res.status(206).json({
-        ok: false,
-        msg: "ERROR: Esta boleta ha sido registrada",
-        registroExistente,
-      });
-    }
+    // if (boletoExistente) {
+    //   return res.status(206).json({
+    //     ok: false,
+    //     msg: "ERROR: Esta boleta ha sido registrada",
+    //     registroExistente,
+    //   });
+    // }
 
     // const nuevaCedula = await TbCedulas.create({
     //   nombre,
