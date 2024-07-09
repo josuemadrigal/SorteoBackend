@@ -96,7 +96,7 @@ const getRegistros = async (req, res = response) => {
 
   try {
     const registros = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
+      `SELECT * FROM tb_padres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
       {
         replacements: { status, municipio, cantidad: parseInt(cantidad) },
         type: sequelize.QueryTypes.SELECT,
@@ -291,7 +291,7 @@ const getParticipando = async (req, res = response) => {
     // }
 
     const [participacion] = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE cedula = :cedula`,
+      `SELECT * FROM tb_padres WHERE cedula = :cedula`,
       {
         replacements: { cedula },
         type: sequelize.QueryTypes.SELECT,
@@ -354,7 +354,7 @@ const getRegistrosList = async (req, res = response) => {
 
   try {
     const registros = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE status='3' AND municipio=:municipio AND ronda=:ronda AND premio=:premio `,
+      `SELECT * FROM tb_padres WHERE status='3' AND municipio=:municipio AND ronda=:ronda AND premio=:premio `,
       {
         replacements: { municipio, ronda: parseInt(ronda), premio },
         type: sequelize.QueryTypes.SELECT,
@@ -504,7 +504,7 @@ const getRegistroByCedula = async (req, res = response) => {
 
   try {
     const registros = await sequelize.query(
-      `SELECT * FROM tb_madres WHERE (status=:status OR status=4) AND cedula=:cedula`,
+      `SELECT * FROM tb_padres WHERE (status=:status OR status=4) AND cedula=:cedula`,
       {
         replacements: { status, cedula },
         type: sequelize.QueryTypes.SELECT,
