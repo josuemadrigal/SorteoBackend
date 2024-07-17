@@ -117,6 +117,49 @@ const getRegistros = async (req, res = response) => {
   }
 };
 
+const getRegistrosAll = async (req, res = response) => {
+  try {
+    const registros = await sequelize.query(`SELECT * FROM tb_padres`, {
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
+const getRegistrosCountByMunicipio = async (req, res = response) => {
+  try {
+    const registros = await sequelize.query(
+      `SELECT municipio, COUNT(*) as count FROM tb_padres GROUP BY municipio`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener el conteo de registros por municipio",
+      error: error.message,
+    });
+  }
+};
+
 const actualizarRegistros = async (req, res = response) => {
   const { status, premio, ronda } = req.body;
   const { cedula } = req.params;
@@ -571,4 +614,6 @@ module.exports = {
   updateRonda,
   regPremio,
   regCedula,
+  getRegistrosAll,
+  getRegistrosCountByMunicipio,
 };

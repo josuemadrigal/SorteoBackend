@@ -18,6 +18,8 @@ const {
   getRondaNum,
   getRegistroByCedula,
   actualizarRegistroByCedula,
+  getRegistrosAll,
+  getRegistrosCountByMunicipio,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -39,6 +41,8 @@ const validarCantidadMayorCero = (campo) =>
 
 // Obtener registros
 router.get("/", getRegistros);
+router.get("/all", getRegistrosAll);
+router.get("/countByMunicipio", getRegistrosCountByMunicipio);
 router.get("/getRegistrosByCedula", getRegistroByCedula);
 router.get("/getGanadores", getRegistrosList);
 router.get("/cedula", getCedula);
