@@ -112,7 +112,7 @@ router.post(
   "/regRonda",
   [
     check("municipio", "El municipio es necesario").not().isEmpty(),
-    //check("premio", "El premio es necesario").not().isEmpty(),
+    check("premio", "El premio es necesario").not().isEmpty(),
     check("ronda", "La ronda es necesaria").not().isEmpty(),
     check("cantidad", "La cantidad es necesaria").not().isEmpty(),
     check("status", "El status es necesario").not().isEmpty(),

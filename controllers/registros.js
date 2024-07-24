@@ -165,7 +165,7 @@ const actualizarRegistros = async (req, res = response) => {
   const { cedula } = req.params;
 
   try {
-    const [updated] = await TbMadres.update(
+    const [updated] = await TbPadres.update(
       { status, premio, ronda },
       { where: { cedula } }
     );
@@ -422,24 +422,6 @@ const regRonda = async (req, res) => {
   const { municipio, premio, ronda, cantidad, status } = req.body;
 
   try {
-    // const registroExistente = await sequelize.query(
-    //   `SELECT * FROM tb_rondas WHERE municipio=:municipio AND ronda=:ronda AND premio=:premio `,
-    //   {
-    //     replacements: { municipio: municipio, ronda: ronda, premio: premio },
-    //     type: sequelize.QueryTypes.SELECT,
-    //   }
-    // );
-    // const registroExistente = await TbPremios.findOne({
-    //   where: { municipio: municipio, premio: premio, ronda: ronda },
-    // });
-
-    // if (registroExistente) {
-    //   return res.status(203).json({
-    //     ok: false,
-    //     msg: "ERROR: Esta ronda ha sido registrada",
-    //   });
-    // }
-
     const nuevoRegistro = await TbRondas.create({
       municipio,
       premio,
@@ -572,7 +554,7 @@ const actualizarRegistroByCedula = async (req, res = response) => {
   const { coment, status } = req.body;
   const { cedula } = req.params;
   try {
-    const [updated] = await TbMadres.update(
+    const [updated] = await TbPadres.update(
       { coment: coment, status: status },
       { where: { cedula } }
     );
