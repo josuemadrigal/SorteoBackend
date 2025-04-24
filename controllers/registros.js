@@ -49,7 +49,7 @@ const crearRegistro = async (req, res) => {
       cedula,
       status,
       premio,
-      boleto,
+      boleto: "N/A",
       telefono,
     });
 
@@ -333,6 +333,49 @@ const getParticipando = async (req, res = response) => {
     //   });
     // }
 
+    const [participacion] = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE cedula = :cedula`,
+      {
+        replacements: { cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (participacion) {
+      return res.json({
+        ok: true,
+        participando: true,
+        msg: "Esta cédula ya está participando",
+        participacion,
+      });
+    } else {
+      return res.json({
+        ok: true,
+        participando: false,
+        msg: "Esta cédula no está participando",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
+const activarParticipante = async (req, res = response) => {
+  const { cedula } = req.query;
+
+  if (!cedula) {
+    return res.status(400).json({
+      ok: false,
+      msg: "La cédula es requerida",
+    });
+  }
+
+  try {
     const [participacion] = await sequelize.query(
       `SELECT * FROM tb_padres WHERE cedula = :cedula`,
       {
