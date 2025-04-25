@@ -160,6 +160,29 @@ const getRegistrosCountByMunicipio = async (req, res = response) => {
   }
 };
 
+const getRegistrosCountByMunicipioActivo = async (req, res = response) => {
+  try {
+    const registros = await sequelize.query(
+      `SELECT municipio, COUNT(*) as count FROM tb_padres WHERE status="2"  GROUP BY municipio`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener el conteo de registros por municipio",
+      error: error.message,
+    });
+  }
+};
+
 const actualizarRegistros = async (req, res = response) => {
   const { status, premio, ronda } = req.body;
   const { cedula } = req.params;
@@ -676,5 +699,6 @@ module.exports = {
   regCedula,
   getRegistrosAll,
   getRegistrosCountByMunicipio,
+  getRegistrosCountByMunicipioActivo,
   activarParticipante,
 };

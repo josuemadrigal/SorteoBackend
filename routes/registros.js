@@ -21,6 +21,7 @@ const {
   getRegistrosAll,
   getRegistrosCountByMunicipio,
   activarParticipante,
+  getRegistrosCountByMunicipioActivo,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -44,6 +45,7 @@ const validarCantidadMayorCero = (campo) =>
 router.get("/", getRegistros);
 router.get("/all", getRegistrosAll);
 router.get("/countByMunicipio", getRegistrosCountByMunicipio);
+router.get("/countByMunicipioActivo", getRegistrosCountByMunicipioActivo);
 router.get("/getRegistrosByCedula", getRegistroByCedula);
 router.get("/getGanadores", getRegistrosList);
 router.get("/cedula", getCedula);
