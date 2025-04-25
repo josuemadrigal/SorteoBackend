@@ -376,7 +376,7 @@ const activarParticipante = async (req, res = response) => {
   }
 
   try {
-    const [participacion] = await sequelize.query(
+    const [participante] = await sequelize.query(
       `SELECT * FROM tb_padres WHERE cedula = :cedula`,
       {
         replacements: { cedula },
@@ -384,25 +384,60 @@ const activarParticipante = async (req, res = response) => {
       }
     );
 
-    if (participacion) {
+    // Si no existe el participante
+    if (!participante) {
       return res.json({
-        ok: true,
-        participando: true,
-        msg: "Esta cédula ya está participando",
-        participacion,
-      });
-    } else {
-      return res.json({
-        ok: true,
-        participando: false,
-        msg: "Esta cédula no está participando",
+        ok: false,
+        msg: "Cédula no está participando",
       });
     }
+
+    // Si existe pero ya tiene status 2
+    if (participante.status == "2") {
+      return res.json({
+        ok: true,
+        msg: "Cédula ya ha sido activada",
+        participante,
+      });
+    }
+
+    // Si existe y tiene status 1, actualizamos a status 2
+    if (participante.status == "1") {
+      await sequelize.query(
+        `UPDATE tb_padres SET status = "2" WHERE cedula = :cedula`,
+        {
+          replacements: { cedula },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+
+      // Obtenemos los datos actualizados
+      // const [participanteActualizado] = await sequelize.query(
+      //   `SELECT * FROM tb_padres WHERE cedula = :cedula`,
+      //   {
+      //     replacements: { cedula },
+      //     type: sequelize.QueryTypes.SELECT,
+      //   }
+      // );
+
+      return res.json({
+        ok: true,
+        msg: "Cédula activada",
+        participante: participante.nombre,
+      });
+    }
+
+    // Para cualquier otro status
+    return res.json({
+      ok: false,
+      msg: `Cédula con status inválido: ${participante.status}`,
+      participante,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       ok: false,
-      msg: "Error al obtener registros",
+      msg: "Error al procesar la solicitud",
       error: error.message,
     });
   }
@@ -641,4 +676,5 @@ module.exports = {
   regCedula,
   getRegistrosAll,
   getRegistrosCountByMunicipio,
+  activarParticipante,
 };

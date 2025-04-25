@@ -20,6 +20,7 @@ const {
   actualizarRegistroByCedula,
   getRegistrosAll,
   getRegistrosCountByMunicipio,
+  activarParticipante,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -124,6 +125,7 @@ router.post(
 
 // Registrar una cédula
 router.post("/regCedula", [validarCedula, validarCampos], regCedula);
+router.get("/activar", [validarCedula, validarCampos], activarParticipante);
 
 // Actualizar un registro
 router.put(
