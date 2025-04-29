@@ -341,21 +341,6 @@ const getParticipando = async (req, res = response) => {
   }
 
   try {
-    // const [registro] = await sequelize.query(
-    //   `SELECT cedula FROM tb_madres WHERE cedula = :cedula`,
-    //   {
-    //     replacements: { cedula },
-    //     type: sequelize.QueryTypes.SELECT,
-    //   }
-    // );
-
-    // if (!registro) {
-    //   return res.status(404).json({
-    //     ok: false,
-    //     msg: "No se encontró participando esa cédula",
-    //   });
-    // }
-
     const [participacion] = await sequelize.query(
       `SELECT * FROM tb_padres WHERE cedula = :cedula`,
       {
@@ -412,6 +397,98 @@ const activarParticipante = async (req, res = response) => {
       return res.json({
         ok: false,
         msg: "Cédula no está participando",
+      });
+    }
+
+    // Si existe pero ya tiene status 2
+    if (participante.status == "2") {
+      return res.json({
+        ok: true,
+        msg: "Cédula ya ha sido activada",
+        participante,
+      });
+    }
+
+    // Si existe y tiene status 1, actualizamos a status 2
+    if (participante.status == "1") {
+      await sequelize.query(
+        `UPDATE tb_padres SET status = "2" WHERE cedula = :cedula`,
+        {
+          replacements: { cedula },
+          type: sequelize.QueryTypes.UPDATE,
+        }
+      );
+
+      // Obtenemos los datos actualizados
+      // const [participanteActualizado] = await sequelize.query(
+      //   `SELECT * FROM tb_padres WHERE cedula = :cedula`,
+      //   {
+      //     replacements: { cedula },
+      //     type: sequelize.QueryTypes.SELECT,
+      //   }
+      // );
+
+      return res.json({
+        ok: true,
+        msg: "Cédula activada",
+        participante: participante.nombre,
+      });
+    }
+
+    // Para cualquier otro status
+    return res.json({
+      ok: false,
+      msg: `Cédula con status inválido: ${participante.status}`,
+      participante,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al procesar la solicitud",
+      error: error.message,
+    });
+  }
+};
+
+const activarParticipanteByMunicipio = async (req, res = response) => {
+  const { cedula, municipio } = req.query;
+
+  if (!cedula) {
+    return res.status(400).json({
+      ok: false,
+      msg: "La cédula es requerida",
+    });
+  }
+
+  if (!municipio) {
+    return res.status(400).json({
+      ok: false,
+      msg: "El municipio es requerido",
+    });
+  }
+
+  try {
+    const [participante] = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE cedula = :cedula`,
+      {
+        replacements: { cedula },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    // Si no existe el participante
+    if (!participante) {
+      return res.json({
+        ok: false,
+        msg: "Cédula no está participando",
+      });
+    }
+
+    if (participante.municipio != municipio) {
+      return res.json({
+        ok: false,
+        msg: `Participante registrado en ${participante.municipio}`,
       });
     }
 
@@ -701,4 +778,5 @@ module.exports = {
   getRegistrosCountByMunicipio,
   getRegistrosCountByMunicipioActivo,
   activarParticipante,
+  activarParticipanteByMunicipio,
 };
