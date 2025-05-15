@@ -1,4 +1,5 @@
 const { response } = require("express");
+require("dotenv").config();
 
 var { connection, sequelize, query } = require("../database/database");
 //const { v1: uuidv1, v4: uuidv4 } = require("uuid");
@@ -9,6 +10,34 @@ const TbCedulas = require("../models/Tb_cedulas");
 const TbTemporal = require("../models/Tb_temporal");
 const TbRondas = require("../models/Tb_rondas");
 
+const botWp = (name, phone, cedula, municipio) => {
+  const myHeaders = new Headers();
+  myHeaders.append("x-api-key", "tu_api_key_secreta_aqui");
+  myHeaders.append("Content-Type", "application/json");
+
+  urlImagen = process.env.BOT_IMG_SORTEO;
+
+  const raw = JSON.stringify({
+    name: name,
+    phone: phone,
+    cedula: cedula,
+    municipio: municipio,
+    urlMedia: `${urlImagen}`,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  fetch(process.env.BOT_URL, requestOptions)
+    .then((response) => response.text())
+    .then((result) => console.log(result))
+    .catch((error) => console.error(error));
+};
+
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio, boleto, telefono } =
     req.body;
@@ -18,10 +47,6 @@ const crearRegistro = async (req, res) => {
       where: { cedula },
     });
 
-    // const boletoExistente = await TbPadres.findOne({
-    //   where: { boleto },
-    // });
-
     if (registroExistente) {
       return res.status(203).json({
         ok: false,
@@ -29,19 +54,6 @@ const crearRegistro = async (req, res) => {
         registroExistente,
       });
     }
-
-    // if (boletoExistente) {
-    //   return res.status(206).json({
-    //     ok: false,
-    //     msg: "ERROR: Esta boleta ha sido registrada",
-    //     registroExistente,
-    //   });
-    // }
-
-    // const nuevaCedula = await TbCedulas.create({
-    //   nombre,
-    //   cedula,
-    // });
 
     const nuevoRegistro = await TbPadres.create({
       municipio,
@@ -52,6 +64,18 @@ const crearRegistro = async (req, res) => {
       boleto: "N/A",
       telefono,
     });
+
+    if (nuevoRegistro.telefono) {
+      const numeroOriginal = nuevoRegistro.telefono;
+      const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+      const numeroConvertido = "1" + numeroLimpio;
+      botWp(
+        nuevoRegistro.nombre,
+        numeroConvertido,
+        nuevoRegistro.cedula,
+        nuevoRegistro.municipio
+      );
+    }
 
     res.status(201).json({
       ok: true,
@@ -598,6 +622,7 @@ const getRegistrosList = async (req, res = response) => {
 
 const regRonda = async (req, res) => {
   const { municipio, premio, ronda, cantidad, status } = req.body;
+  console.log(municipio);
 
   try {
     const nuevoRegistro = await TbRondas.create({
