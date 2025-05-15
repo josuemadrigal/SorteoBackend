@@ -1,4 +1,5 @@
 const { response } = require("express");
+require("dotenv").config();
 
 var { connection, sequelize, query } = require("../database/database");
 //const { v1: uuidv1, v4: uuidv4 } = require("uuid");
@@ -8,6 +9,34 @@ const TbPremios = require("../models/Tb_premios"); // Corrected the import
 const TbCedulas = require("../models/Tb_cedulas");
 const TbTemporal = require("../models/Tb_temporal");
 const TbRondas = require("../models/Tb_rondas");
+
+const botWp = (name, phone, cedula, municipio) => {
+  const myHeaders = new Headers();
+  myHeaders.append("x-api-key", "tu_api_key_secreta_aqui");
+  myHeaders.append("Content-Type", "application/json");
+
+  urlImagen = process.env.BOT_IMG_SORTEO;
+
+  const raw = JSON.stringify({
+    name: name,
+    phone: phone,
+    cedula: cedula,
+    municipio: municipio,
+    urlMedia: `${urlImagen}`,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  fetch(process.env.BOT_URL, requestOptions)
+    .then((response) => response.text())
+    .then((result) => console.log(result))
+    .catch((error) => console.error(error));
+};
 
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio, boleto, telefono } =
@@ -35,6 +64,18 @@ const crearRegistro = async (req, res) => {
       boleto: "N/A",
       telefono,
     });
+
+    if (nuevoRegistro.telefono) {
+      const numeroOriginal = nuevoRegistro.telefono;
+      const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+      const numeroConvertido = "1" + numeroLimpio;
+      botWp(
+        nuevoRegistro.nombre,
+        numeroConvertido,
+        nuevoRegistro.cedula,
+        nuevoRegistro.municipio
+      );
+    }
 
     res.status(201).json({
       ok: true,
