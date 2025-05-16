@@ -66,8 +66,7 @@ const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
 };
 
 const crearRegistro = async (req, res) => {
-  const { municipio, nombre, cedula, status, premio, boleto, telefono } =
-    req.body;
+  const { municipio, nombre, cedula, status, premio, boleto, phone } = req.body;
 
   try {
     const registroExistente = await TbPadres.findOne({
@@ -89,21 +88,20 @@ const crearRegistro = async (req, res) => {
       status,
       premio,
       boleto: "N/A",
-      telefono,
+      telefono: phone,
     });
 
     if (nuevoRegistro.telefono) {
       const numeroOriginal = nuevoRegistro.telefono;
       const numeroLimpio = numeroOriginal.replace(/\D/g, "");
       const numeroConvertido = "1" + numeroLimpio;
-      if (phone) {
-        botWp(
-          nuevoRegistro.nombre,
-          numeroConvertido,
-          nuevoRegistro.cedula,
-          nuevoRegistro.municipio
-        );
-      }
+
+      await botWp(
+        nuevoRegistro.nombre,
+        numeroConvertido,
+        nuevoRegistro.cedula,
+        nuevoRegistro.municipio
+      );
     }
 
     res.status(201).json({
