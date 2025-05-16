@@ -22,7 +22,7 @@ const botWp = (name, phone, cedula, municipio) => {
     phone: phone,
     cedula: cedula,
     municipio: municipio,
-    urlMedia: `${urlImagen}`,
+    urlMedia: "https://app.eduardespiritusanto.com/registrate-aqui-app.jpeg",
   });
 
   const requestOptions = {
