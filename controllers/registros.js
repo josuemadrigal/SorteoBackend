@@ -32,7 +32,34 @@ const botWp = (name, phone, cedula, municipio) => {
     redirect: "follow",
   };
 
-  fetch(process.env.BOT_URL, requestOptions)
+  fetch(`${process.env.BOT_URL}/messagesSorteo`, requestOptions)
+    .then((response) => response.text())
+    .then((result) => console.log(result))
+    .catch((error) => console.error(error));
+};
+
+const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
+  const myHeaders = new Headers();
+  myHeaders.append("x-api-key", "tu_api_key_secreta_aqui");
+  myHeaders.append("Content-Type", "application/json");
+
+  const raw = JSON.stringify({
+    name: name,
+    phone: phone,
+    cedula: cedula,
+    municipio: municipio,
+    slug_premio: slug_premio,
+    premio: premio,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  fetch(`http://localhost:4011/bot/v1/ganador`, requestOptions)
     .then((response) => response.text())
     .then((result) => console.log(result))
     .catch((error) => console.error(error));
@@ -69,12 +96,14 @@ const crearRegistro = async (req, res) => {
       const numeroOriginal = nuevoRegistro.telefono;
       const numeroLimpio = numeroOriginal.replace(/\D/g, "");
       const numeroConvertido = "1" + numeroLimpio;
-      botWp(
-        nuevoRegistro.nombre,
-        numeroConvertido,
-        nuevoRegistro.cedula,
-        nuevoRegistro.municipio
-      );
+      if (phone) {
+        botWp(
+          nuevoRegistro.nombre,
+          numeroConvertido,
+          nuevoRegistro.cedula,
+          nuevoRegistro.municipio
+        );
+      }
     }
 
     res.status(201).json({
@@ -208,7 +237,10 @@ const getRegistrosCountByMunicipioActivo = async (req, res = response) => {
 };
 
 const actualizarRegistros = async (req, res = response) => {
-  const { status, premio, ronda } = req.body;
+  const { status, premio, ronda, name, municipio, slug_premio, phone } =
+    req.body;
+
+  console.log(req.body);
   const { cedula } = req.params;
 
   try {
@@ -223,6 +255,14 @@ const actualizarRegistros = async (req, res = response) => {
         msg: "Registro no existe por ID",
       });
     }
+    if (phone) {
+      console.log("Enviando mensaje a WhatsApp: ", phone);
+      const numeroOriginal = phone;
+      const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+      const numeroConvertido = "1" + numeroLimpio;
+      botWinWp(name, numeroConvertido, cedula, municipio, slug_premio, premio);
+    }
+
     res.json({
       ok: true,
       msg: "Registro actualizado correctamente",
