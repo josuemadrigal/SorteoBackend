@@ -22,7 +22,7 @@ const botWp = (name, phone, cedula, municipio) => {
     phone: phone,
     cedula: cedula,
     municipio: municipio,
-    urlMedia: "https://app.eduardespiritusanto.com/registrate-aqui-app.jpeg",
+    imageUrl: "https://app.eduardespiritusanto.com/registrate-aqui-app.jpeg",
   });
 
   const requestOptions = {
@@ -32,7 +32,7 @@ const botWp = (name, phone, cedula, municipio) => {
     redirect: "follow",
   };
 
-  fetch(`${process.env.BOT_URL}/messagesSorteo`, requestOptions)
+  fetch(`${process.env.BOT_URL}/send-message`, requestOptions)
     .then((response) => response.text())
     .then((result) => console.log(result))
     .catch((error) => console.error(error));
