@@ -59,7 +59,7 @@ const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
     redirect: "follow",
   };
 
-  fetch(`http://localhost:4011/bot/v1/ganador`, requestOptions)
+  fetch(`${process.env.BOT_URL}/ganador`, requestOptions)
     .then((response) => response.text())
     .then((result) => console.log(result))
     .catch((error) => console.error(error));
@@ -235,8 +235,9 @@ const getRegistrosCountByMunicipioActivo = async (req, res = response) => {
 };
 
 const actualizarRegistros = async (req, res = response) => {
-  const { status, premio, ronda, name, municipio, slug_premio, phone } =
+  const { status, premio, ronda, name, municipio, slug_premio, telefono } =
     req.body;
+  const phone = telefono;
 
   console.log(req.body);
   const { cedula } = req.params;
@@ -254,7 +255,6 @@ const actualizarRegistros = async (req, res = response) => {
       });
     }
     if (phone) {
-      console.log("Enviando mensaje a WhatsApp: ", phone);
       const numeroOriginal = phone;
       const numeroLimpio = numeroOriginal.replace(/\D/g, "");
       const numeroConvertido = "1" + numeroLimpio;
