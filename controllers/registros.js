@@ -32,6 +32,7 @@ const botWp = (name, phone, cedula, municipio) => {
     redirect: "follow",
   };
 
+  console.log(raw);
   fetch(`${process.env.BOT_URL}/send-message`, requestOptions)
     .then((response) => response.text())
     .then((result) => console.log(result))
@@ -66,7 +67,8 @@ const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
 };
 
 const crearRegistro = async (req, res) => {
-  const { municipio, nombre, cedula, status, premio, boleto, phone } = req.body;
+  const { municipio, nombre, cedula, status, premio, boleto, telefono } =
+    req.body;
 
   try {
     const registroExistente = await TbPadres.findOne({
@@ -88,7 +90,7 @@ const crearRegistro = async (req, res) => {
       status,
       premio,
       boleto: "N/A",
-      telefono: phone,
+      telefono: telefono,
     });
 
     if (nuevoRegistro.telefono) {
