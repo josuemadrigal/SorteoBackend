@@ -66,6 +66,32 @@ const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
     .catch((error) => console.error(error));
 };
 
+const botWpRecordatorio = (name, phone, cedula, municipio) => {
+  const myHeaders = new Headers();
+  myHeaders.append("x-api-key", "tu_api_key_secreta_aqui");
+  myHeaders.append("Content-Type", "application/json");
+
+  const raw = JSON.stringify({
+    name: name,
+    phone: phone,
+    cedula: cedula,
+    municipio: municipio,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  console.log(raw);
+  fetch(`${process.env.BOT_URL}/recordatorio`, requestOptions)
+    .then((response) => response.text())
+    .then((result) => console.log(result))
+    .catch((error) => console.error(error));
+};
+
 const crearRegistro = async (req, res) => {
   const { municipio, nombre, cedula, status, premio, boleto, telefono } =
     req.body;
@@ -185,6 +211,46 @@ const getRegistrosAll = async (req, res = response) => {
     res.status(500).json({
       ok: false,
       msg: "Error al obtener registros",
+      error: error.message,
+    });
+  }
+};
+
+const postRecordatorio = async (req, res = response) => {
+  const { municipio } = req.body;
+  console.log(municipio);
+  try {
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE municipio='${municipio}'`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    if (registros.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No hay registros para este municipio",
+      });
+    }
+
+    for (let i = 0; i < registros.length; i++) {
+      botWpRecordatorio(
+        registros[i].nombre,
+        registros[i].telefono,
+        registros[i].cedula,
+        municipio
+      );
+    }
+
+    res.json({
+      ok: true,
+      registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener el conteo de registros por municipio",
       error: error.message,
     });
   }
@@ -840,6 +906,7 @@ module.exports = {
   regPremio,
   regCedula,
   getRegistrosAll,
+  postRecordatorio,
   getRegistrosCountByMunicipio,
   getRegistrosCountByMunicipioActivo,
   activarParticipante,
