@@ -216,16 +216,67 @@ const getRegistrosAll = async (req, res = response) => {
   }
 };
 
+// const postRecordatorio = async (req, res = response) => {
+//   const { municipio } = req.body;
+//   console.log(municipio);
+//   try {
+//     const registros = await sequelize.query(
+//       `SELECT * FROM tb_padres WHERE municipio='${municipio}'`,
+//       {
+//         type: sequelize.QueryTypes.SELECT,
+//       }
+//     );
+//     if (registros.length === 0) {
+//       return res.status(404).json({
+//         ok: false,
+//         msg: "No hay registros para este municipio",
+//       });
+//     }
+
+//     for (let i = 0; i < registros.length; i++) {
+//       let numeroConvertido;
+
+//       if (registros[i].telefono) {
+//         const numeroOriginal = registros[i].telefono;
+//         const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+//         numeroConvertido = "1" + numeroLimpio;
+//       }
+//       botWpRecordatorio(
+//         registros[i].nombre,
+//         numeroConvertido,
+//         registros[i].cedula,
+//         municipio
+//       );
+//     }
+
+//     res.json({
+//       ok: true,
+//       registros,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       ok: false,
+//       msg: "Error al obtener el conteo de registros por municipio",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const postRecordatorio = async (req, res = response) => {
   const { municipio } = req.body;
-  console.log(municipio);
+  console.log(`Iniciando recordatorios para municipio: ${municipio}`);
+
   try {
+    // 1. Obtener registros (con parámetros seguros)
     const registros = await sequelize.query(
-      `SELECT * FROM tb_padres WHERE municipio='${municipio}'`,
+      `SELECT * FROM tb_padres WHERE municipio ='${municipio}'`,
       {
+        replacements: { municipio },
         type: sequelize.QueryTypes.SELECT,
       }
     );
+
     if (registros.length === 0) {
       return res.status(404).json({
         ok: false,
@@ -233,32 +284,110 @@ const postRecordatorio = async (req, res = response) => {
       });
     }
 
-    for (let i = 0; i < registros.length; i++) {
-      let numeroConvertido;
+    console.log(`Registros a procesar: ${registros.length}`);
 
-      if (registros[i].telefono) {
-        const numeroOriginal = registros[i].telefono;
-        const numeroLimpio = numeroOriginal.replace(/\D/g, "");
-        numeroConvertido = "1" + numeroLimpio;
+    // 2. Configuración de envío
+    const config = {
+      delayEntreEnvios: 1500, // 1.5 seg entre lotes
+      lotesParalelos: 3, // 3 mensajes simultáneos
+      reintentosMaximos: 2, // Máximo 2 reintentos
+    };
+
+    // 3. Procesamiento optimizado
+    const resultados = {
+      total: registros.length,
+      exitosos: 0,
+      fallidos: 0,
+      errores: [],
+    };
+
+    async function enviarRegistro(registro) {
+      let intentos = 0;
+
+      while (intentos <= config.reintentosMaximos) {
+        try {
+          let numeroConvertido = null;
+
+          if (registro.telefono) {
+            const numeroLimpio = registro.telefono.replace(/\D/g, "");
+            numeroConvertido = "1" + numeroLimpio;
+          }
+
+          await botWpRecordatorio(
+            registro.nombre,
+            numeroConvertido,
+            registro.cedula,
+            municipio
+          );
+
+          resultados.exitosos++;
+          return;
+        } catch (error) {
+          intentos++;
+          if (intentos > config.reintentosMaximos) {
+            resultados.fallidos++;
+            resultados.errores.push({
+              idRegistro: registro.id || registro.cedula,
+              error: error.message,
+            });
+            console.error(
+              `Error en registro ${registro.cedula}:`,
+              error.message
+            );
+            return;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2000 * intentos));
+        }
       }
-      botWpRecordatorio(
-        registros[i].nombre,
-        numeroConvertido,
-        registros[i].cedula,
-        municipio
+    }
+
+    // 4. Procesar en lotes controlados
+    for (let i = 0; i < registros.length; i += config.lotesParalelos) {
+      const loteActual = registros.slice(i, i + config.lotesParalelos);
+
+      await Promise.all(loteActual.map(enviarRegistro));
+
+      // Delay entre lotes
+      if (i + config.lotesParalelos < registros.length) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, config.delayEntreEnvios)
+        );
+      }
+
+      // Log de progreso
+      console.log(
+        `Progreso: ${Math.min(i + config.lotesParalelos, registros.length)}/${
+          registros.length
+        }`
       );
     }
 
+    // 5. Respuesta final
     res.json({
       ok: true,
-      registros,
+      resultados: {
+        total: resultados.total,
+        exitosos: resultados.exitosos,
+        fallidos: resultados.fallidos,
+        primerosErrores: resultados.errores.slice(0, 5), // Muestra solo 5 errores
+      },
+      detalles:
+        resultados.errores.length > 0
+          ? {
+              advertencia: "Algunos registros fallaron",
+              totalErrores: resultados.errores.length,
+            }
+          : null,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error general:", error);
     res.status(500).json({
       ok: false,
-      msg: "Error al obtener el conteo de registros por municipio",
-      error: error.message,
+      msg: "Error en el proceso de recordatorios",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Contacte al administrador",
     });
   }
 };
