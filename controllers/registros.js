@@ -119,18 +119,18 @@ const crearRegistro = async (req, res) => {
       telefono: telefono,
     });
 
-    if (nuevoRegistro.telefono) {
-      const numeroOriginal = nuevoRegistro.telefono;
-      const numeroLimpio = numeroOriginal.replace(/\D/g, "");
-      const numeroConvertido = "1" + numeroLimpio;
+    // if (nuevoRegistro.telefono) {
+    //   const numeroOriginal = nuevoRegistro.telefono;
+    //   const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+    //   const numeroConvertido = "1" + numeroLimpio;
 
-      await botWp(
-        nuevoRegistro.nombre,
-        numeroConvertido,
-        nuevoRegistro.cedula,
-        nuevoRegistro.municipio
-      );
-    }
+    //   await botWp(
+    //     nuevoRegistro.nombre,
+    //     numeroConvertido,
+    //     nuevoRegistro.cedula,
+    //     nuevoRegistro.municipio
+    //   );
+    // }
 
     res.status(201).json({
       ok: true,
@@ -458,12 +458,12 @@ const actualizarRegistros = async (req, res = response) => {
         msg: "Registro no existe por ID",
       });
     }
-    if (phone) {
-      const numeroOriginal = phone;
-      const numeroLimpio = numeroOriginal.replace(/\D/g, "");
-      const numeroConvertido = "1" + numeroLimpio;
-      botWinWp(name, numeroConvertido, cedula, municipio, slug_premio, premio);
-    }
+    // if (phone) {
+    //   const numeroOriginal = phone;
+    //   const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+    //   const numeroConvertido = "1" + numeroLimpio;
+    //   botWinWp(name, numeroConvertido, cedula, municipio, slug_premio, premio);
+    // }
 
     res.json({
       ok: true,
