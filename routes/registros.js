@@ -19,6 +19,7 @@ const {
   getRegistroByCedula,
   actualizarRegistroByCedula,
   getRegistrosAll,
+  postRecordatorio,
   getRegistrosCountByMunicipio,
   activarParticipante,
   getRegistrosCountByMunicipioActivo,
@@ -149,7 +150,11 @@ router.put(
   ],
   actualizarRegistros
 );
-
+router.post(
+  "/recordatorio",
+  [check("municipio", "El municipio es necesario").not().isEmpty()],
+  postRecordatorio
+);
 // Actualizar un registro
 router.put(
   "/upDateByCedula/:cedula",
