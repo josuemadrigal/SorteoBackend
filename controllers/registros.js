@@ -234,9 +234,16 @@ const postRecordatorio = async (req, res = response) => {
     }
 
     for (let i = 0; i < registros.length; i++) {
+      let numeroConvertido;
+
+      if (registros[i].telefono) {
+        const numeroOriginal = registros[i].telefono;
+        const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+        numeroConvertido = "1" + numeroLimpio;
+      }
       botWpRecordatorio(
         registros[i].nombre,
-        registros[i].telefono,
+        numeroConvertido,
         registros[i].cedula,
         municipio
       );
