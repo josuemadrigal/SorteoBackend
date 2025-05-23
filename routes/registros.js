@@ -24,6 +24,7 @@ const {
   activarParticipante,
   getRegistrosCountByMunicipioActivo,
   activarParticipanteByMunicipio,
+  getGanadoresMunicipio,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -50,6 +51,7 @@ router.get("/countByMunicipio", getRegistrosCountByMunicipio);
 router.get("/countByMunicipioActivo", getRegistrosCountByMunicipioActivo);
 router.get("/getRegistrosByCedula", getRegistroByCedula);
 router.get("/getGanadores", getRegistrosList);
+router.get("/getGanadoresMunicipio", getGanadoresMunicipio);
 router.get("/cedula", getCedula);
 router.get("/getPremios", getPremios);
 router.get("/getParticipando", getParticipando);

@@ -862,6 +862,32 @@ const getRegistrosList = async (req, res = response) => {
   }
 };
 
+const getGanadoresMunicipio = async (req, res = response) => {
+  const { municipio } = req.query;
+
+  try {
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE status='3' AND municipio='${municipio}' ORDER BY premio, nombre;`,
+      {
+        replacements: { municipio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    res.json({
+      ok: true,
+      registros: registros,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error al obtener registros ganadores",
+      error: error.message,
+    });
+  }
+};
+
 const regRonda = async (req, res) => {
   const { municipio, premio, ronda, cantidad, status } = req.body;
   console.log(municipio);
@@ -1047,4 +1073,5 @@ module.exports = {
   getRegistrosCountByMunicipioActivo,
   activarParticipante,
   activarParticipanteByMunicipio,
+  getGanadoresMunicipio,
 };
