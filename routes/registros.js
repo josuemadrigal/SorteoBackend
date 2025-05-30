@@ -25,6 +25,7 @@ const {
   getRegistrosCountByMunicipioActivo,
   activarParticipanteByMunicipio,
   getGanadoresMunicipio,
+  postGanadores,
 } = require("../controllers/registros");
 
 const router = Router();
@@ -99,6 +100,7 @@ router.post(
   ],
   crearTemporal
 );
+router.post("/sendGanadores", postGanadores);
 
 // Registrar un premio
 router.post(
