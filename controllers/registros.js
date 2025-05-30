@@ -546,6 +546,7 @@ const postGanadores = async (req, res = response) => {
       for (let j = 0; j < loteActual.length; j++) {
         const registro = loteActual[j];
         const indiceGlobal = i + j;
+        console.log("Esto es registro: -", registro);
 
         await enviarRegistroConReintentos(registro, indiceGlobal);
         estado.procesados++;
