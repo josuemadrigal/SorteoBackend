@@ -53,6 +53,8 @@ const botWinWp = (name, phone, cedula, municipio, slug_premio, premio) => {
     premio: premio,
   });
 
+  console.log("esto es lo quwe envia a el bot: -", raw);
+
   const requestOptions = {
     method: "POST",
     headers: myHeaders,
