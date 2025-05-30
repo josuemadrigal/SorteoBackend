@@ -392,6 +392,265 @@ const postRecordatorio = async (req, res = response) => {
   }
 };
 
+const postGanadores = async (req, res = response) => {
+  try {
+    // 1. Obtener registros
+    const registros = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE status ='3'`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (registros.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No hay registros para procesar",
+      });
+    }
+
+    console.log(`📊 Total de registros a procesar: ${registros.length}`);
+
+    // 2. Configuración optimizada para evitar bloqueos
+    const config = {
+      // Configuración conservadora para evitar límites de WhatsApp
+      mensajesPorLote: 5, // Solo 5 mensajes por lote
+      delayEntreLotes: 10000, // 10 segundos entre lotes (más tiempo)
+      delayEntreEnvios: 3000, // 3 segundos entre cada mensaje individual
+      reintentosMaximos: 3, // Más reintentos
+      pausaLargaCada: 50, // Pausa larga cada 50 mensajes
+      tiempoPausaLarga: 60000, // 1 minuto de pausa larga
+
+      // Configuración de límites por hora
+      maxMensajesPorHora: 200, // Límite conservador por hora
+      intervaloMonitoreo: 3600000, // 1 hora en milisegundos
+    };
+
+    // 3. Sistema de tracking y control
+    const estado = {
+      total: registros.length,
+      procesados: 0,
+      exitosos: 0,
+      fallidos: 0,
+      errores: [],
+      inicioTiempo: Date.now(),
+      mensajesEnviadosUltimaHora: 0,
+      ultimaHoraReset: Date.now(),
+    };
+
+    // 4. Función para verificar límites por hora
+    const verificarLimitesHora = () => {
+      const ahora = Date.now();
+      if (ahora - estado.ultimaHoraReset >= config.intervaloMonitoreo) {
+        estado.mensajesEnviadosUltimaHora = 0;
+        estado.ultimaHoraReset = ahora;
+      }
+
+      return estado.mensajesEnviadosUltimaHora < config.maxMensajesPorHora;
+    };
+
+    // 5. Función mejorada para enviar un registro
+    async function enviarRegistroConReintentos(registro, indice) {
+      let intentos = 0;
+
+      while (intentos <= config.reintentosMaximos) {
+        try {
+          // Verificar si podemos enviar (límite por hora)
+          if (!verificarLimitesHora()) {
+            console.log("⏰ Límite por hora alcanzado. Esperando...");
+            await new Promise((resolve) => setTimeout(resolve, 60000)); // Esperar 1 minuto
+            continue;
+          }
+
+          if (registro.telefono) {
+            const numeroOriginal = registro.telefono;
+            const numeroLimpio = numeroOriginal.replace(/\D/g, "");
+            const numeroConvertido = "1" + numeroLimpio;
+
+            console.log(
+              `📱 Enviando mensaje ${indice + 1}/${estado.total} a ${
+                registro.name
+              }`
+            );
+
+            await botWinWp(
+              registro.name,
+              numeroConvertido,
+              registro.cedula,
+              registro.municipio,
+              registro.slug_premio,
+              registro.premio
+            );
+
+            estado.exitosos++;
+            estado.mensajesEnviadosUltimaHora++;
+
+            // Log de progreso cada 10 mensajes
+            if ((indice + 1) % 10 === 0) {
+              const progreso = (((indice + 1) / estado.total) * 100).toFixed(1);
+              const tiempoTranscurrido =
+                (Date.now() - estado.inicioTiempo) / 1000;
+              const velocidad = ((indice + 1) / tiempoTranscurrido) * 60; // mensajes por minuto
+
+              console.log(
+                `📈 Progreso: ${progreso}% (${indice + 1}/${
+                  estado.total
+                }) - Velocidad: ${velocidad.toFixed(1)} msg/min`
+              );
+            }
+
+            return true;
+          } else {
+            console.log(`⚠️ Registro ${registro.cedula} no tiene teléfono`);
+            return false;
+          }
+        } catch (error) {
+          intentos++;
+          console.error(
+            `❌ Error en intento ${intentos} para ${registro.cedula}:`,
+            error.message
+          );
+
+          if (intentos > config.reintentosMaximos) {
+            estado.fallidos++;
+            estado.errores.push({
+              idRegistro: registro.id || registro.cedula,
+              nombre: registro.name,
+              telefono: registro.telefono,
+              error: error.message,
+              intentos: intentos - 1,
+            });
+            return false;
+          }
+
+          // Espera progresiva entre reintentos
+          const tiempoEspera = 2000 * intentos * Math.random() + 1000; // 1-6 segundos aleatorio
+          await new Promise((resolve) => setTimeout(resolve, tiempoEspera));
+        }
+      }
+    }
+
+    // 6. Procesar registros en lotes controlados
+    console.log("🚀 Iniciando envío masivo de mensajes...");
+
+    for (let i = 0; i < registros.length; i += config.mensajesPorLote) {
+      const loteActual = registros.slice(i, i + config.mensajesPorLote);
+
+      console.log(
+        `📦 Procesando lote ${
+          Math.floor(i / config.mensajesPorLote) + 1
+        }/${Math.ceil(registros.length / config.mensajesPorLote)}`
+      );
+
+      // Enviar mensajes del lote uno por uno (no en paralelo para mayor control)
+      for (let j = 0; j < loteActual.length; j++) {
+        const registro = loteActual[j];
+        const indiceGlobal = i + j;
+
+        await enviarRegistroConReintentos(registro, indiceGlobal);
+        estado.procesados++;
+
+        // Pausa entre cada mensaje individual
+        if (j < loteActual.length - 1) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, config.delayEntreEnvios)
+          );
+        }
+
+        // Pausa larga cada cierto número de mensajes
+        if (
+          (indiceGlobal + 1) % config.pausaLargaCada === 0 &&
+          indiceGlobal + 1 < registros.length
+        ) {
+          console.log(
+            `⏸️ Pausa larga (${config.tiempoPausaLarga / 1000}s) después de ${
+              indiceGlobal + 1
+            } mensajes`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, config.tiempoPausaLarga)
+          );
+        }
+      }
+
+      // Pausa entre lotes
+      if (i + config.mensajesPorLote < registros.length) {
+        console.log(
+          `⏳ Esperando ${
+            config.delayEntreLotes / 1000
+          }s antes del siguiente lote...`
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, config.delayEntreLotes)
+        );
+      }
+    }
+
+    // 7. Estadísticas finales
+    const tiempoTotalSegundos = (Date.now() - estado.inicioTiempo) / 1000;
+    const tiempoTotalMinutos = tiempoTotalSegundos / 60;
+
+    console.log("✅ Proceso completado!");
+    console.log(`📊 Estadísticas finales:`);
+    console.log(`   - Total procesados: ${estado.procesados}`);
+    console.log(`   - Exitosos: ${estado.exitosos}`);
+    console.log(`   - Fallidos: ${estado.fallidos}`);
+    console.log(`   - Tiempo total: ${tiempoTotalMinutos.toFixed(1)} minutos`);
+    console.log(
+      `   - Velocidad promedio: ${(
+        estado.exitosos / tiempoTotalMinutos
+      ).toFixed(1)} mensajes/minuto`
+    );
+
+    // 8. Respuesta detallada
+    res.json({
+      ok: true,
+      resultados: {
+        total: estado.total,
+        procesados: estado.procesados,
+        exitosos: estado.exitosos,
+        fallidos: estado.fallidos,
+        tiempoTotalMinutos: Math.round(tiempoTotalMinutos * 10) / 10,
+        velocidadPromedio:
+          Math.round((estado.exitosos / tiempoTotalMinutos) * 10) / 10,
+        configuracionUsada: {
+          mensajesPorLote: config.mensajesPorLote,
+          delayEntreLotes: config.delayEntreLotes,
+          maxMensajesPorHora: config.maxMensajesPorHora,
+        },
+      },
+      errores:
+        estado.errores.length > 0
+          ? {
+              total: estado.errores.length,
+              primeros5: estado.errores.slice(0, 5),
+              advertencia: "Revisa los errores para identificar patrones",
+            }
+          : null,
+      recomendaciones: [
+        "Monitorea tu cuenta de WhatsApp durante el proceso",
+        "Si recibes advertencias, detén el proceso inmediatamente",
+        "Considera usar múltiples números de WhatsApp para distribuir la carga",
+        "Guarda los registros fallidos para reintentarlo más tarde",
+      ],
+    });
+  } catch (error) {
+    console.error("💥 Error general en el proceso:", error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error crítico en el proceso de envío masivo",
+      error:
+        process.env.NODE_ENV === "development"
+          ? {
+              message: error.message,
+              stack: error.stack,
+            }
+          : "Contacte al administrador del sistema",
+      momento: new Date().toISOString(),
+    });
+  }
+};
+
 const getRegistrosCountByMunicipio = async (req, res = response) => {
   try {
     const registros = await sequelize.query(
@@ -1074,4 +1333,5 @@ module.exports = {
   activarParticipante,
   activarParticipanteByMunicipio,
   getGanadoresMunicipio,
+  postGanadores,
 };
