@@ -480,7 +480,7 @@ const postGanadores = async (req, res = response) => {
               numeroConvertido,
               registro.cedula,
               registro.municipio,
-              registro.slug_premio,
+              registro.premio,
               registro.premio
             );
 
