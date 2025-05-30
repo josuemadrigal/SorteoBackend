@@ -471,12 +471,12 @@ const postGanadores = async (req, res = response) => {
 
             console.log(
               `📱 Enviando mensaje ${indice + 1}/${estado.total} a ${
-                registro.name
+                registro.nombre
               }`
             );
 
             await botWinWp(
-              registro.name,
+              registro.nombre,
               numeroConvertido,
               registro.cedula,
               registro.municipio,
@@ -517,7 +517,7 @@ const postGanadores = async (req, res = response) => {
             estado.fallidos++;
             estado.errores.push({
               idRegistro: registro.id || registro.cedula,
-              nombre: registro.name,
+              nombre: registro.nombre,
               telefono: registro.telefono,
               error: error.message,
               intentos: intentos - 1,
