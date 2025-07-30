@@ -172,27 +172,89 @@ const crearTemporal = async (req, res) => {
   }
 };
 
+// const getRegistros = async (req, res = response) => {
+//   const { status, municipio, cantidad } = req.query;
+
+//   try {
+//     const registros = await sequelize.query(
+//       `SELECT * FROM tb_padres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
+//       {
+//         replacements: { status, municipio, cantidad: parseInt(cantidad) },
+//         type: sequelize.QueryTypes.SELECT,
+//       }
+//     );
+
+//     res.json({
+//       ok: true,
+//       registros,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       ok: false,
+//       msg: "Error al obtener registros",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getRegistros = async (req, res = response) => {
-  const { status, municipio, cantidad } = req.query;
+  const municipioDistribucion = {
+    "la-romana": 4,
+    caleta: 1,
+    guaymate: 2,
+    "villa-hermosa": 2,
+    cumayasa: 1,
+  };
 
   try {
-    const registros = await sequelize.query(
-      `SELECT * FROM tb_padres WHERE status=:status AND municipio=:municipio ORDER BY RAND() LIMIT 0,:cantidad`,
-      {
-        replacements: { status, municipio, cantidad: parseInt(cantidad) },
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
+    let registrosFinales = [];
+
+    for (const [municipio, cantidad] of Object.entries(municipioDistribucion)) {
+      // Obtener todos los IDs válidos del municipio con status 2
+      const ids = await sequelize.query(
+        `SELECT id FROM tb_padres 
+         WHERE municipio = :municipio AND status = 2`,
+        {
+          replacements: { municipio },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+
+      const idList = ids.map((r) => r.id);
+
+      // Si no hay suficientes registros, omitir este municipio
+      if (idList.length < cantidad) continue;
+
+      // Mezclar IDs y tomar los primeros `cantidad`
+      const shuffled = idList.sort(() => 0.5 - Math.random());
+      const selectedIds = shuffled.slice(0, cantidad);
+
+      const registros = await sequelize.query(
+        `SELECT * FROM tb_padres 
+         WHERE id IN (:ids)`,
+        {
+          replacements: { ids: selectedIds },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+
+      registrosFinales.push(...registros);
+    }
+
+    // Mezclar todos los registros seleccionados antes de responder
+    registrosFinales = registrosFinales.sort(() => 0.5 - Math.random());
 
     res.json({
       ok: true,
-      registros,
+      registros: registrosFinales,
+      total: registrosFinales.length,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       ok: false,
-      msg: "Error al obtener registros",
+      msg: "Error al obtener registros aleatorios",
       error: error.message,
     });
   }
