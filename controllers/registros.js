@@ -198,63 +198,134 @@ const crearTemporal = async (req, res) => {
 //   }
 // };
 
+// const getRegistros = async (req, res = response) => {
+//   const municipioDistribucion = {
+//     "la-romana": 4,
+//     caleta: 1,
+//     guaymate: 2,
+//     "villa-hermosa": 2,
+//     cumayasa: 1,
+//   };
+
+//   try {
+//     let registrosFinales = [];
+
+//     for (const [municipio, cantidad] of Object.entries(municipioDistribucion)) {
+//       // Obtener todos los IDs válidos del municipio con status 2
+//       const ids = await sequelize.query(
+//         `SELECT id FROM tb_padres
+//          WHERE municipio = :municipio AND status = 2`,
+//         {
+//           replacements: { municipio },
+//           type: sequelize.QueryTypes.SELECT,
+//         }
+//       );
+
+//       const idList = ids.map((r) => r.id);
+
+//       // Si no hay suficientes registros, omitir este municipio
+//       if (idList.length < cantidad) continue;
+
+//       // Mezclar IDs y tomar los primeros `cantidad`
+//       const shuffled = idList.sort(() => 0.5 - Math.random());
+//       const selectedIds = shuffled.slice(0, cantidad);
+
+//       const registros = await sequelize.query(
+//         `SELECT * FROM tb_padres
+//          WHERE id IN (:ids)`,
+//         {
+//           replacements: { ids: selectedIds },
+//           type: sequelize.QueryTypes.SELECT,
+//         }
+//       );
+
+//       registrosFinales.push(...registros);
+//     }
+
+//     // Mezclar todos los registros seleccionados antes de responder
+//     registrosFinales = registrosFinales.sort(() => 0.5 - Math.random());
+
+//     res.json({
+//       ok: true,
+//       registros: registrosFinales,
+//       total: registrosFinales.length,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       ok: false,
+//       msg: "Error al obtener registros aleatorios",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getRegistros = async (req, res = response) => {
-  const municipioDistribucion = {
-    "la-romana": 4,
-    caleta: 1,
-    guaymate: 2,
-    "villa-hermosa": 2,
-    cumayasa: 1,
-  };
+  const { municipio } = req.query; // o req.query si lo envías como query parameter
+
+  console.log(municipio);
+  // Lista de municipios válidos
+  const municipiosValidos = [
+    "la-romana",
+    "caleta",
+    "guaymate",
+    "villa-hermosa",
+    "cumayasa",
+  ];
 
   try {
-    let registrosFinales = [];
-
-    for (const [municipio, cantidad] of Object.entries(municipioDistribucion)) {
-      // Obtener todos los IDs válidos del municipio con status 2
-      const ids = await sequelize.query(
-        `SELECT id FROM tb_padres 
-         WHERE municipio = :municipio AND status = 2`,
-        {
-          replacements: { municipio },
-          type: sequelize.QueryTypes.SELECT,
-        }
-      );
-
-      const idList = ids.map((r) => r.id);
-
-      // Si no hay suficientes registros, omitir este municipio
-      if (idList.length < cantidad) continue;
-
-      // Mezclar IDs y tomar los primeros `cantidad`
-      const shuffled = idList.sort(() => 0.5 - Math.random());
-      const selectedIds = shuffled.slice(0, cantidad);
-
-      const registros = await sequelize.query(
-        `SELECT * FROM tb_padres 
-         WHERE id IN (:ids)`,
-        {
-          replacements: { ids: selectedIds },
-          type: sequelize.QueryTypes.SELECT,
-        }
-      );
-
-      registrosFinales.push(...registros);
+    // Validar que el municipio sea válido
+    if (!municipio || !municipiosValidos.includes(municipio)) {
+      return res.status(400).json({
+        ok: false,
+        msg:
+          "Municipio no válido. Municipios permitidos: " +
+          municipiosValidos.join(", "),
+      });
     }
 
-    // Mezclar todos los registros seleccionados antes de responder
-    registrosFinales = registrosFinales.sort(() => 0.5 - Math.random());
+    // Obtener todos los IDs válidos del municipio con status 2
+    const ids = await sequelize.query(
+      `SELECT id FROM tb_padres WHERE municipio = :municipio AND status = 2`,
+      {
+        replacements: { municipio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const idList = ids.map((r) => r.id);
+
+    // Verificar si hay registros disponibles
+    if (idList.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        msg: `No hay registros disponibles para el municipio: ${municipio}`,
+      });
+    }
+
+    // Seleccionar un ID aleatorio
+    const randomIndex = Math.floor(Math.random() * idList.length);
+    const selectedId = idList[randomIndex];
+
+    // Obtener el registro completo
+    const registro = await sequelize.query(
+      `SELECT * FROM tb_padres WHERE id = :id`,
+      {
+        replacements: { id: selectedId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
 
     res.json({
       ok: true,
-      registros: registrosFinales,
-      total: registrosFinales.length,
+      registro: registro[0], // Solo un registro
+      municipio: municipio,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       ok: false,
-      msg: "Error al obtener registros aleatorios",
+      msg: "Error al obtener registro aleatorio",
       error: error.message,
     });
   }
