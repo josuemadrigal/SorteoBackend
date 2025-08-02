@@ -1258,13 +1258,12 @@ const getRegistrosList = async (req, res = response) => {
 };
 
 const getGanadoresMunicipio = async (req, res = response) => {
-  const { municipio } = req.query;
+  //const { municipio } = req.query;
 
   try {
     const registros = await sequelize.query(
-      `SELECT * FROM tb_padres WHERE status='3' AND municipio='${municipio}' ORDER BY premio, nombre;`,
+      `SELECT * FROM tb_padres WHERE status='3' ORDER BY premio, nombre;`,
       {
-        replacements: { municipio },
         type: sequelize.QueryTypes.SELECT,
       }
     );
